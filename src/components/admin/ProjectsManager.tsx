@@ -222,122 +222,133 @@ export function ProjectsManager({
           </button>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {filteredProjects.map((p) => {
             const isPublished = p.published !== false;
             return (
               <div
                 key={p.id || p.slug}
-                className="group relative flex flex-col rounded-2xl border border-border bg-surface overflow-hidden transition-all hover:border-accent/50 hover:shadow-xl"
+                className="group relative flex flex-col rounded-[1.75rem] border border-border bg-surface shadow-lg overflow-hidden transition-all duration-300 hover:border-accent/50 hover:shadow-2xl hover:shadow-accent/10 hover:-translate-y-1"
               >
                 {/* Thumbnail Header */}
-                <div className="relative aspect-[16/10] w-full overflow-hidden bg-surface/50">
+                <div className="relative aspect-[16/10] w-full overflow-hidden bg-surface/80">
                   <img
                     src={p.thumbnail || p.hero || '/assets/work-jck.jpg'}
                     alt={p.title}
-                    className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-103"
+                    className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
                   />
 
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent" />
+                  {/* Dark gradient overlay matching live site */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent opacity-90 transition-opacity duration-300 group-hover:opacity-95" />
 
-                  {/* Badges on Thumbnail */}
-                  <div className="absolute top-3 left-3 flex flex-wrap items-center gap-1.5">
+                  {/* Status Badges on Thumbnail */}
+                  <div className="absolute top-3.5 left-3.5 flex flex-wrap items-center gap-1.5 z-10">
                     <span
-                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wider ${
+                      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-0.5 text-[0.65rem] font-semibold uppercase tracking-wider backdrop-blur-md border ${
                         isPublished
-                          ? 'bg-success/20 text-success border border-success/30 backdrop-blur-xs'
-                          : 'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30 backdrop-blur-xs'
+                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30 shadow-xs'
+                          : 'bg-amber-500/20 text-amber-300 border-amber-500/30 shadow-xs'
                       }`}
                     >
+                      <span
+                        className={`h-1.5 w-1.5 rounded-full ${
+                          isPublished ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
+                        }`}
+                      />
                       {isPublished ? 'Published' : 'Draft'}
                     </span>
 
                     {p.featured && (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-accent px-2.5 py-0.5 text-[0.65rem] font-semibold text-accent-foreground">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-gradient-accent px-3 py-0.5 text-[0.65rem] font-semibold text-accent-foreground shadow-xs">
                         <Sparkles className="h-2.5 w-2.5" /> Featured
                       </span>
                     )}
                   </div>
 
-                  <div className="absolute top-3 right-3 flex items-center gap-1">
+                  {/* Top Right Star Toggle */}
+                  <div className="absolute top-3.5 right-3.5 flex items-center gap-1 z-10">
                     <button
                       type="button"
                       title={p.featured ? 'Remove Featured' : 'Mark as Featured'}
                       onClick={() => handleToggleFeatured(p)}
-                      className={`h-7 w-7 rounded-full flex items-center justify-center backdrop-blur-md border transition-colors ${
+                      className={`h-7 w-7 rounded-full flex items-center justify-center backdrop-blur-md border transition-all duration-200 ${
                         p.featured
-                          ? 'bg-accent text-accent-foreground border-accent'
-                          : 'bg-background/60 text-muted-foreground border-border hover:text-accent hover:border-accent'
+                          ? 'bg-accent text-accent-foreground border-accent shadow-md scale-105'
+                          : 'bg-background/70 text-muted-foreground border-border/80 hover:text-accent hover:border-accent hover:bg-background'
                       }`}
                     >
                       <Star className="h-3.5 w-3.5 fill-current" />
                     </button>
                   </div>
 
-                  {/* Category overlay */}
-                  <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between">
-                    <span className="text-[0.68rem] font-semibold uppercase tracking-widest text-accent drop-shadow-md">
-                      {p.category} {p.year ? `· ${p.year}` : ''}
+                  {/* Category & Order Overlay */}
+                  <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between z-10">
+                    <span className="text-[0.68rem] uppercase tracking-[0.22em] font-semibold text-accent drop-shadow-md">
+                      {p.categoryLabel || p.category} {p.year ? `· ${p.year}` : ''}
                     </span>
-                    <span className="text-[0.68rem] text-muted-foreground">
+                    <span className="text-[0.68rem] text-muted-foreground bg-background/60 backdrop-blur-xs px-2 py-0.5 rounded-md border border-border/50">
                       Order: #{p.displayOrder ?? '-'}
                     </span>
                   </div>
                 </div>
 
-                {/* Card Content */}
-                <div className="flex flex-1 flex-col p-4">
-                  <h3 className="font-display text-base font-semibold text-foreground truncate">
-                    {p.title}
-                  </h3>
-                  <p className="text-xs text-muted-foreground mt-0.5">
+                {/* Card Content & Details */}
+                <div className="flex flex-1 flex-col p-5 sm:p-6">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="font-display text-base sm:text-lg font-bold text-foreground leading-snug group-hover:text-accent transition-colors truncate">
+                      {p.title}
+                    </h3>
+                  </div>
+
+                  <p className="text-xs text-muted-foreground mt-1">
                     Client: <span className="text-foreground font-medium">{p.client || 'Personal'}</span>
                   </p>
 
-                  <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
+                  <p className="mt-2.5 line-clamp-2 text-xs leading-relaxed text-muted-foreground">
                     {p.shortDescription || p.description}
                   </p>
 
-                  {/* Tools preview */}
+                  {/* Tools preview badges */}
                   {p.tools && p.tools.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-1">
-                      {p.tools.slice(0, 3).map((t) => (
+                    <div className="mt-3.5 flex flex-wrap gap-1.5">
+                      {p.tools.slice(0, 4).map((t) => (
                         <span
                           key={t}
-                          className="rounded-md border border-border/80 bg-background/50 px-2 py-0.5 text-[0.65rem] text-muted-foreground"
+                          className="rounded-lg border border-border/80 bg-background/60 px-2 py-0.5 text-[0.65rem] font-medium text-muted-foreground"
                         >
                           {t}
                         </span>
                       ))}
-                      {p.tools.length > 3 && (
-                        <span className="text-[0.65rem] text-muted-foreground px-1">
-                          +{p.tools.length - 3}
+                      {p.tools.length > 4 && (
+                        <span className="rounded-lg border border-border/60 bg-background/40 px-1.5 py-0.5 text-[0.65rem] text-muted-foreground">
+                          +{p.tools.length - 4}
                         </span>
                       )}
                     </div>
                   )}
 
-                  {/* Bottom Action Row */}
+                  {/* Bottom Action Row with matching live styling */}
                   <div className="mt-auto pt-4 flex items-center justify-between border-t border-border/70">
                     {/* Live preview modal button */}
                     <button
                       type="button"
                       onClick={() => setPreviewProject(p)}
                       title="Preview Case Study Modal"
-                      className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-accent"
+                      className="inline-flex items-center gap-1.5 text-xs font-medium text-foreground transition-colors hover:text-accent group/btn"
                     >
-                      <Eye className="h-3.5 w-3.5" /> Preview
+                      <Eye className="h-3.5 w-3.5 text-accent transition-transform group-hover/btn:scale-110" />
+                      <span>Preview</span>
                     </button>
 
                     <div className="flex items-center gap-1.5">
-                      {/* Publish toggle */}
+                      {/* Publish / Draft Toggle */}
                       <button
                         type="button"
                         onClick={() => handleTogglePublish(p)}
                         title={isPublished ? 'Switch to Draft' : 'Publish to Live Site'}
-                        className={`rounded-lg px-2 py-1 text-[0.68rem] font-medium border transition-colors ${
+                        className={`rounded-xl px-2.5 py-1 text-[0.68rem] font-semibold border transition-all duration-200 ${
                           isPublished
-                            ? 'border-border bg-surface text-muted-foreground hover:text-foreground'
+                            ? 'border-border bg-surface text-muted-foreground hover:text-foreground hover:bg-surface/80'
                             : 'border-accent bg-accent/15 text-accent hover:bg-accent hover:text-accent-foreground'
                         }`}
                       >
@@ -349,7 +360,7 @@ export function ProjectsManager({
                         type="button"
                         onClick={() => handleDuplicate(p)}
                         title="Duplicate as draft"
-                        className="rounded-lg border border-border p-1.5 text-muted-foreground hover:text-foreground hover:bg-surface"
+                        className="rounded-xl border border-border p-1.5 text-muted-foreground hover:text-foreground hover:bg-surface hover:border-accent/40 transition-colors"
                       >
                         <Copy className="h-3.5 w-3.5" />
                       </button>
@@ -359,7 +370,7 @@ export function ProjectsManager({
                         type="button"
                         onClick={() => setEditingProject(p)}
                         title="Edit Project"
-                        className="rounded-lg border border-border p-1.5 text-accent hover:bg-accent/15"
+                        className="rounded-xl border border-border p-1.5 text-accent hover:bg-accent/15 hover:border-accent/50 transition-colors"
                       >
                         <Edit className="h-3.5 w-3.5" />
                       </button>
@@ -369,7 +380,7 @@ export function ProjectsManager({
                         type="button"
                         onClick={() => setProjectToDelete(p)}
                         title="Delete Project"
-                        className="rounded-lg border border-border p-1.5 text-destructive hover:bg-destructive/15"
+                        className="rounded-xl border border-border p-1.5 text-destructive hover:bg-destructive/15 hover:border-destructive/40 transition-colors"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </button>

@@ -135,3 +135,49 @@ body {
 .scroll-hint {
   animation: scroll-hint 2.4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
 }
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 38s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* Diagonal light sweep animation for cards */
+.light-sweep {
+  position: absolute;
+  top: -50%;
+  left: -120%;
+  width: 60%;
+  height: 200%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.05) 25%,
+    rgba(192, 132, 252, 0.3) 50%,
+    rgba(147, 197, 253, 0.2) 70%,
+    transparent 100%
+  );
+  transform: rotate(25deg);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.group:hover .light-sweep {
+  opacity: 1;
+  left: 200%;
+  transition: left 0.75s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.25s ease;
+}

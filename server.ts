@@ -260,7 +260,7 @@ const INITIAL_TESTIMONIALS = [
   {
     id: 'testi-1',
     name: 'Amara Silva',
-    role: 'Founder, Lumen Studio',
+    role: 'Founder, Lumen Studio - Sri Lanka',
     initials: 'AS',
     quote: 'Niftygraphy එක්ක වැඩ කරන්න ලැබුණු එක ලොකු පහසුවක් වුණා. අපේ Brand identity එක සහ social media designs ටික අපි හිතුවටත් වඩා ගොඩක් Quality එකට, වෙලාවටම ready කරලා දුන්නා.',
     rating: 5,
@@ -270,7 +270,7 @@ const INITIAL_TESTIMONIALS = [
   {
     id: 'testi-2',
     name: 'Dev Rajan',
-    role: 'Content Creator, 180K Subscribers',
+    role: 'Content Creator, 180K Subscribers - India',
     initials: 'DR',
     quote: 'My YouTube CTR went up significantly within just two weeks of using these thumbnail designs. The visual hierarchy and color contrast make every video pop on the feed.',
     rating: 5,
@@ -280,7 +280,7 @@ const INITIAL_TESTIMONIALS = [
   {
     id: 'testi-3',
     name: 'Kavishka Perera',
-    role: 'Co-Founder, Apex Digital',
+    role: 'Co-Founder, Apex Digital - Sri Lanka',
     initials: 'KP',
     quote: 'අපේ Digital marketing campaign එකට අවශ්ය වුණු Banner designs සහ Post templates ටික ඉතාම professional මට්ටමෙන් ලබා දුන්නා. Great communication and fast delivery!',
     rating: 5,
@@ -290,7 +290,7 @@ const INITIAL_TESTIMONIALS = [
   {
     id: 'testi-4',
     name: 'Chloe Whitfield',
-    role: 'Marketing Lead, Northbound',
+    role: 'Marketing Lead, Northbound - UK',
     initials: 'CW',
     quote: 'Fast, creative, and extremely detail-oriented. They handled our entire print and digital promotional materials smoothly without a single layout issue.',
     rating: 5,
@@ -300,7 +300,7 @@ const INITIAL_TESTIMONIALS = [
   {
     id: 'testi-5',
     name: 'Marcus Vance',
-    role: 'E-Commerce Store Owner',
+    role: 'E-Commerce Store Owner - Australia',
     initials: 'MV',
     quote: 'The apparel merch designs exceeded our expectations. All vector files were 100% print-ready, and our first T-shirt batch sold out much faster than planned.',
     rating: 5,
@@ -310,7 +310,7 @@ const INITIAL_TESTIMONIALS = [
   {
     id: 'testi-6',
     name: 'Elena Rostova',
-    role: 'UI/UX Product Designer',
+    role: 'UI/UX Product Designer - USA',
     initials: 'ER',
     quote: 'Outstanding visual aesthetics! They translated our complex design brief into clean, modern graphics with incredible precision and speed.',
     rating: 5,

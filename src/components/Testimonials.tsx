@@ -4,6 +4,7 @@ import {
   HeartHandshake,
   MessageSquarePlus,
   Send,
+  ShieldCheck,
   Sparkles,
   Star,
   UserCheck,
@@ -24,7 +25,6 @@ const RATING_LABELS: Record<number, string> = {
 
 export function Testimonials() {
   const [testimonials, setTestimonials] = useState<Testimonial[]>(STATIC_TESTIMONIALS);
-  const [isFormOpen, setIsFormOpen] = useState(true);
 
   // Review Form State
   const [name, setName] = useState('');
@@ -114,8 +114,12 @@ export function Testimonials() {
 
   const activeRatingDisplay = hoverRating !== null ? hoverRating : rating;
 
+  // Duplicate testimonials array to form a continuous infinite seamless loop
+  const displayItems = testimonials.length > 0 ? testimonials : STATIC_TESTIMONIALS;
+  const loopTestimonials = [...displayItems, ...displayItems];
+
   return (
-    <section id="testimonials" className="mx-auto max-w-[110rem] px-5 py-24 sm:px-8 sm:py-32 lg:px-14">
+    <section id="testimonials" className="mx-auto max-w-[110rem] px-5 py-24 sm:px-8 sm:py-32 lg:px-14 overflow-hidden">
       <SectionHeading
         label="Testimonials"
         title={
@@ -126,78 +130,117 @@ export function Testimonials() {
         subtitle="Real stories, honest reviews, and feedback from creators, founders, and teams worldwide."
       />
 
-      {/* Testimonials Cards Grid */}
-      <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {testimonials.map((t, idx) => {
-          const starsCount = t.rating ? Math.min(5, Math.max(1, t.rating)) : 5;
-          const displayInitials =
-            t.initials ||
-            t.name
-              .split(' ')
-              .map((p) => p[0])
-              .join('')
-              .slice(0, 2)
-              .toUpperCase();
+      {/* =========================================================================
+          OVERALL RATING & SATISFACTION BADGES
+          ========================================================================= */}
+      <Reveal delay={60} className="mt-8 flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+        <div className="inline-flex items-center gap-2 rounded-full border border-accent/40 bg-surface/90 px-4 py-2 text-xs sm:text-sm font-medium text-foreground shadow-lg backdrop-blur-md transition-transform hover:scale-105">
+          <span className="text-accent text-base sm:text-lg leading-none">⭐</span>
+          <span className="font-semibold text-foreground">4.9 / 5.0</span>
+          <span className="text-muted-foreground">({testimonials.length} Client Reviews)</span>
+        </div>
 
-          return (
-            <Reveal
-              key={t.id || `${t.name}-${idx}`}
-              delay={(idx % 3) * 100}
-              className="glass relative flex h-full flex-col rounded-3xl p-7 sm:p-8 transition-all duration-500 hover:border-accent/40 hover:-translate-y-1 shadow-lg group"
-            >
-              {/* Star Rating Badge */}
-              <div className="flex items-center justify-between">
+        <div className="inline-flex items-center gap-2 rounded-full border border-border bg-surface/90 px-4 py-2 text-xs sm:text-sm font-medium text-foreground shadow-lg backdrop-blur-md transition-transform hover:scale-105">
+          <span className="text-base sm:text-lg leading-none">🛡️</span>
+          <span className="font-semibold text-foreground">100% Satisfaction Rate</span>
+        </div>
+      </Reveal>
+
+      {/* =========================================================================
+          INFINITE AUTO-SCROLLING CAROUSEL / MARQUEE
+          ========================================================================= */}
+      <div className="relative mt-12 sm:mt-14 w-full">
+        {/* Left & Right Subtle Fade Gradient Masks */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 left-0 z-10 w-8 sm:w-20 bg-gradient-to-r from-background to-transparent"
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 right-0 z-10 w-8 sm:w-20 bg-gradient-to-l from-background to-transparent"
+        />
+
+        {/* Scrolling Carousel Track */}
+        <div className="overflow-hidden py-3">
+          <div className="animate-marquee gap-6 flex items-stretch">
+            {loopTestimonials.map((t, idx) => {
+              const starsCount = t.rating ? Math.min(5, Math.max(1, t.rating)) : 5;
+              const displayInitials =
+                t.initials ||
+                t.name
+                  .split(' ')
+                  .map((p) => p[0])
+                  .join('')
+                  .slice(0, 2)
+                  .toUpperCase();
+
+              return (
                 <div
-                  className="flex gap-1"
-                  aria-label={`Rated ${starsCount} out of 5 stars`}
+                  key={`${t.id || t.name}-${idx}`}
+                  className="glass relative flex h-[290px] sm:h-[300px] w-[85vw] sm:w-[380px] lg:w-[420px] shrink-0 flex-col justify-between rounded-[1.75rem] border border-border/90 bg-surface/85 p-6 sm:p-7 shadow-lg transition-all duration-300 hover:border-accent/50 hover:shadow-2xl hover:shadow-accent/10"
                 >
-                  {Array.from({ length: 5 }).map((_, sIdx) => (
-                    <Star
-                      key={sIdx}
-                      className={`h-4 w-4 ${
-                        sIdx < starsCount
-                          ? 'fill-accent text-accent'
-                          : 'fill-muted/20 text-muted-foreground/30'
-                      }`}
-                      aria-hidden="true"
-                    />
-                  ))}
+                  {/* Top: Star Rating & Date */}
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <div
+                        className="flex gap-1"
+                        aria-label={`Rated ${starsCount} out of 5 stars`}
+                      >
+                        {Array.from({ length: 5 }).map((_, sIdx) => (
+                          <Star
+                            key={sIdx}
+                            className={`h-4 w-4 ${
+                              sIdx < starsCount
+                                ? 'fill-accent text-accent'
+                                : 'fill-muted/20 text-muted-foreground/30'
+                            }`}
+                            aria-hidden="true"
+                          />
+                        ))}
+                      </div>
+
+                      {t.createdAt && (
+                        <span className="text-[0.68rem] text-muted-foreground">
+                          {new Date(t.createdAt).toLocaleDateString(undefined, {
+                            month: 'short',
+                            year: 'numeric',
+                          })}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Review Quote with Line Clamping */}
+                    <blockquote className="mt-4 text-xs sm:text-sm leading-relaxed text-muted-foreground line-clamp-4">
+                      “{t.quote}”
+                    </blockquote>
+                  </div>
+
+                  {/* Client Info Footer */}
+                  <div className="flex items-center gap-3 border-t border-border/80 pt-4 mt-auto">
+                    <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-accent font-display text-xs font-bold text-accent-foreground shadow-sm">
+                      {displayInitials}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-foreground truncate">{t.name}</p>
+                      <p className="text-xs text-muted-foreground truncate">{t.role || 'Client'}</p>
+                    </div>
+                  </div>
                 </div>
+              );
+            })}
+          </div>
+        </div>
 
-                {t.createdAt && (
-                  <span className="text-[0.68rem] text-muted-foreground">
-                    {new Date(t.createdAt).toLocaleDateString(undefined, {
-                      month: 'short',
-                      year: 'numeric',
-                    })}
-                  </span>
-                )}
-              </div>
-
-              {/* Review Quote */}
-              <blockquote className="mt-5 flex-1 text-sm sm:text-base leading-relaxed text-muted-foreground">
-                “{t.quote}”
-              </blockquote>
-
-              {/* Client Info Footer */}
-              <div className="mt-6 flex items-center gap-3 border-t border-border/80 pt-5">
-                <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-accent font-display text-sm font-semibold text-accent-foreground shadow-sm">
-                  {displayInitials}
-                </span>
-                <div className="min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">{t.name}</p>
-                  <p className="text-xs text-muted-foreground truncate">{t.role || 'Client'}</p>
-                </div>
-              </div>
-            </Reveal>
-          );
-        })}
+        {/* Subtle Pause Hint */}
+        <p className="mt-3 text-center text-[0.7rem] text-muted-foreground/60 tracking-wider">
+          Hover over any review to pause scrolling
+        </p>
       </div>
 
       {/* =========================================================================
           INTERACTIVE REVIEW / FEEDBACK FORM
           ========================================================================= */}
-      <Reveal delay={150} className="mt-16 sm:mt-20">
+      <Reveal delay={120} className="mt-16 sm:mt-20">
         <div className="relative overflow-hidden rounded-[2rem] border border-border bg-surface/60 backdrop-blur-xl p-6 sm:p-10 lg:p-12 shadow-2xl">
           {/* Subtle background ambient glow */}
           <div className="pointer-events-none absolute -right-20 -top-20 h-64 w-64 rounded-full bg-accent/10 blur-3xl" />
@@ -249,126 +292,111 @@ export function Testimonials() {
                   </div>
                 )}
 
-                {/* Rating Selection */}
-                <div className="rounded-2xl border border-border bg-background/50 p-4 sm:p-5">
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Your Overall Rating
+                {/* Rating Selector */}
+                <div className="rounded-2xl border border-border bg-background/50 p-4 sm:p-5 text-center">
+                  <label className="block text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                    Your Rating
                   </label>
-                  <div className="mt-2 flex flex-wrap items-center gap-3">
-                    <div className="flex gap-1.5" role="radiogroup" aria-label="Select star rating">
-                      {[1, 2, 3, 4, 5].map((starNum) => {
-                        const isFilled = starNum <= activeRatingDisplay;
-                        return (
-                          <button
-                            key={starNum}
-                            type="button"
-                            onClick={() => setRating(starNum)}
-                            onMouseEnter={() => setHoverRating(starNum)}
-                            onMouseLeave={() => setHoverRating(null)}
-                            aria-label={`${starNum} Star${starNum > 1 ? 's' : ''}`}
-                            className="group p-1 focus:outline-none transition-transform hover:scale-125 active:scale-95"
-                          >
-                            <Star
-                              className={`h-7 w-7 transition-colors duration-200 ${
-                                isFilled
-                                  ? 'fill-accent text-accent drop-shadow-[0_0_8px_rgba(var(--accent-rgb,255,215,0),0.5)]'
-                                  : 'fill-transparent text-muted-foreground/40 group-hover:text-muted-foreground'
-                              }`}
-                            />
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    <span className="text-xs sm:text-sm font-semibold text-accent animate-in fade-in duration-200">
-                      {RATING_LABELS[activeRatingDisplay] || `${activeRatingDisplay} Stars`}
-                    </span>
+                  <div className="mt-3 flex items-center justify-center gap-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setRating(star)}
+                        onMouseEnter={() => setHoverRating(star)}
+                        onMouseLeave={() => setHoverRating(null)}
+                        className="p-1.5 transition-transform hover:scale-125 focus:outline-none"
+                        aria-label={`Select ${star} stars`}
+                      >
+                        <Star
+                          className={`h-7 w-7 sm:h-8 sm:w-8 transition-colors ${
+                            star <= activeRatingDisplay
+                              ? 'fill-accent text-accent'
+                              : 'fill-muted/20 text-muted-foreground/30'
+                          }`}
+                        />
+                      </button>
+                    ))}
                   </div>
+                  <p className="mt-2 text-xs font-medium text-accent">
+                    {RATING_LABELS[activeRatingDisplay]}
+                  </p>
                 </div>
 
-                {/* Two Column Inputs: Name & Role/Company */}
+                {/* Name & Role Inputs */}
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
                     <label
                       htmlFor="review-name"
-                      className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                      className="block text-xs font-medium uppercase tracking-wider text-muted-foreground"
                     >
-                      Your Name / Brand <span className="text-accent">*</span>
+                      Your Name / Brand *
                     </label>
                     <input
                       id="review-name"
                       type="text"
                       required
+                      placeholder="e.g. Sarah Jenkins"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      placeholder="e.g. Alex Morgan"
-                      className="mt-1.5 w-full rounded-xl border border-border bg-background px-4 py-2.5 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                      className="mt-1.5 w-full rounded-xl border border-input bg-background/80 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
                     />
                   </div>
 
                   <div>
                     <label
                       htmlFor="review-role"
-                      className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+                      className="block text-xs font-medium uppercase tracking-wider text-muted-foreground"
                     >
-                      Company, Channel or Role
+                      Role / Channel / Company
                     </label>
                     <input
                       id="review-role"
                       type="text"
+                      placeholder="e.g. Founder, Horizon Tech - UK"
                       value={role}
                       onChange={(e) => setRole(e.target.value)}
-                      placeholder="e.g. Founder, Nova Studio / YouTuber"
-                      className="mt-1.5 w-full rounded-xl border border-border bg-background px-4 py-2.5 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground/60 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
+                      className="mt-1.5 w-full rounded-xl border border-input bg-background/80 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
                     />
                   </div>
                 </div>
 
-                {/* Feedback Message */}
+                {/* Review Quote Textarea */}
                 <div>
-                  <div className="flex items-center justify-between">
-                    <label
-                      htmlFor="review-message"
-                      className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-                    >
-                      Review / Feedback Message <span className="text-accent">*</span>
-                    </label>
-                    <span className="text-[0.68rem] text-muted-foreground">
-                      {quote.length} characters
-                    </span>
-                  </div>
+                  <label
+                    htmlFor="review-quote"
+                    className="block text-xs font-medium uppercase tracking-wider text-muted-foreground"
+                  >
+                    Your Experience / Feedback *
+                  </label>
                   <textarea
-                    id="review-message"
-                    rows={4}
+                    id="review-quote"
                     required
+                    rows={4}
+                    placeholder="Tell us about the design quality, turnaround speed, communication, and results..."
                     value={quote}
                     onChange={(e) => setQuote(e.target.value)}
-                    placeholder="Tell us about the project outcome, turnaround time, communication, and overall design quality..."
-                    className="mt-1.5 w-full rounded-xl border border-border bg-background p-4 text-xs sm:text-sm leading-relaxed text-foreground placeholder:text-muted-foreground/60 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent resize-none"
+                    className="mt-1.5 w-full rounded-xl border border-input bg-background/80 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent resize-none"
                   />
                 </div>
 
-                {/* Submit Action Button */}
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pt-2">
-                  <p className="text-[0.72rem] text-muted-foreground flex items-center gap-1.5">
-                    <UserCheck className="h-3.5 w-3.5 text-accent shrink-0" />
-                    Reviews are automatically published and synced with our verified client records.
+                {/* Submit Button */}
+                <div className="flex items-center justify-between pt-2">
+                  <p className="text-[0.72rem] text-muted-foreground">
+                    Reviews publish immediately to our public portfolio.
                   </p>
 
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="inline-flex items-center justify-center gap-2 rounded-full bg-gradient-accent px-7 py-3 text-xs sm:text-sm font-semibold text-accent-foreground shadow-lg shadow-accent/20 transition-all duration-300 hover:scale-102 hover:shadow-accent/30 disabled:opacity-50 shrink-0"
+                    className="inline-flex items-center gap-2 rounded-full bg-gradient-accent px-6 py-3 text-xs sm:text-sm font-semibold text-accent-foreground shadow-lg transition-all duration-300 hover:opacity-95 hover:shadow-accent/25 hover:scale-[1.02] disabled:opacity-50"
                   >
                     {isSubmitting ? (
-                      <span className="inline-flex items-center gap-2">
-                        <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-accent-foreground border-t-transparent" />
-                        Submitting...
-                      </span>
+                      'Submitting...'
                     ) : (
                       <>
                         <Send className="h-4 w-4" />
-                        Submit Review
+                        Post Review
                       </>
                     )}
                   </button>
@@ -381,4 +409,5 @@ export function Testimonials() {
     </section>
   );
 }
+
 

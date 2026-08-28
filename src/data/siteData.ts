@@ -30,8 +30,35 @@ export const SITE_CONFIG = {
 };
 
 export const LOGO_URL = '/assets/niftygraphy-logo.jpg';
-export const PORTRAIT_URL = '/assets/portrait-shen.jpg';
+export const PORTRAIT_URL = 'https://i.imgur.com/R7RzgEg.jpg';
 export const HERO_ABSTRACT_URL = '/assets/hero-abstract.jpg';
+
+export const ABOUT_SLIDES = [
+  {
+    url: 'https://i.imgur.com/TANZYbs.jpeg',
+    alt: "Creator's Vision - The Art of Creation",
+    caption: "The Art of Creation",
+    subtitle: "Creative Direction & Production",
+  },
+  {
+    url: 'https://i.imgur.com/R7RzgEg.jpg',
+    alt: "P.D. Yadeesha Shen Perera - Studio Portrait",
+    caption: "Shen Perera",
+    subtitle: "Independent Graphic Designer",
+  },
+  {
+    url: 'https://i.imgur.com/Zg3eby0.jpg',
+    alt: "Focus and Determination - Niftygraphy",
+    caption: "The Silent Craft",
+    subtitle: "Precision & Visual Identity",
+  },
+  {
+    url: 'https://i.imgur.com/fhVm1r2.jpg',
+    alt: "Violet Glitch & Motion Aesthetic Portrait",
+    caption: "Creative Velocity",
+    subtitle: "Modern Motion & Glitch Aesthetics",
+  },
+];
 
 export const STATS: StatItem[] = [
   { value: '150+', label: 'Projects Completed' },

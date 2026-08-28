@@ -84,10 +84,14 @@ export interface ProcessStep {
 }
 
 export interface Testimonial {
+  id?: string;
   name: string;
   role: string;
-  initials: string;
+  initials?: string;
   quote: string;
+  rating?: number;
+  status?: 'approved' | 'pending' | 'rejected';
+  createdAt?: string;
 }
 
 export interface ToolItem {

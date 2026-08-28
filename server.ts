@@ -256,6 +256,69 @@ const INITIAL_PACKAGES = [
   },
 ];
 
+const INITIAL_TESTIMONIALS = [
+  {
+    id: 'testi-1',
+    name: 'Amara Silva',
+    role: 'Founder, Lumen Studio',
+    initials: 'AS',
+    quote: 'Niftygraphy එක්ක වැඩ කරන්න ලැබුණු එක ලොකු පහසුවක් වුණා. අපේ Brand identity එක සහ social media designs ටික අපි හිතුවටත් වඩා ගොඩක් Quality එකට, වෙලාවටම ready කරලා දුන්නා.',
+    rating: 5,
+    status: 'approved',
+    createdAt: new Date('2025-01-10').toISOString(),
+  },
+  {
+    id: 'testi-2',
+    name: 'Dev Rajan',
+    role: 'Content Creator, 180K Subscribers',
+    initials: 'DR',
+    quote: 'My YouTube CTR went up significantly within just two weeks of using these thumbnail designs. The visual hierarchy and color contrast make every video pop on the feed.',
+    rating: 5,
+    status: 'approved',
+    createdAt: new Date('2025-01-22').toISOString(),
+  },
+  {
+    id: 'testi-3',
+    name: 'Kavishka Perera',
+    role: 'Co-Founder, Apex Digital',
+    initials: 'KP',
+    quote: 'අපේ Digital marketing campaign එකට අවශ්ය වුණු Banner designs සහ Post templates ටික ඉතාම professional මට්ටමෙන් ලබා දුන්නා. Great communication and fast delivery!',
+    rating: 5,
+    status: 'approved',
+    createdAt: new Date('2025-02-01').toISOString(),
+  },
+  {
+    id: 'testi-4',
+    name: 'Chloe Whitfield',
+    role: 'Marketing Lead, Northbound',
+    initials: 'CW',
+    quote: 'Fast, creative, and extremely detail-oriented. They handled our entire print and digital promotional materials smoothly without a single layout issue.',
+    rating: 5,
+    status: 'approved',
+    createdAt: new Date('2025-02-05').toISOString(),
+  },
+  {
+    id: 'testi-5',
+    name: 'Marcus Vance',
+    role: 'E-Commerce Store Owner',
+    initials: 'MV',
+    quote: 'The apparel merch designs exceeded our expectations. All vector files were 100% print-ready, and our first T-shirt batch sold out much faster than planned.',
+    rating: 5,
+    status: 'approved',
+    createdAt: new Date('2025-02-12').toISOString(),
+  },
+  {
+    id: 'testi-6',
+    name: 'Elena Rostova',
+    role: 'UI/UX Product Designer',
+    initials: 'ER',
+    quote: 'Outstanding visual aesthetics! They translated our complex design brief into clean, modern graphics with incredible precision and speed.',
+    rating: 5,
+    status: 'approved',
+    createdAt: new Date('2025-02-18').toISOString(),
+  },
+];
+
 const INITIAL_SETTINGS = {
   siteName: 'NIFTYGRAPHY',
   tagline: 'Designing ideas into visual experiences.',
@@ -286,7 +349,7 @@ function readDb(): DbSchema {
         projects: data.projects || INITIAL_PROJECTS,
         categories: data.categories || INITIAL_CATEGORIES,
         packages: data.packages || INITIAL_PACKAGES,
-        testimonials: data.testimonials || [],
+        testimonials: data.testimonials && data.testimonials.length > 0 ? data.testimonials : INITIAL_TESTIMONIALS,
         messages: data.messages || [],
         settings: { ...INITIAL_SETTINGS, ...(data.settings || {}) },
         adminTokens: data.adminTokens || [],
@@ -300,7 +363,7 @@ function readDb(): DbSchema {
     projects: INITIAL_PROJECTS,
     categories: INITIAL_CATEGORIES,
     packages: INITIAL_PACKAGES,
-    testimonials: [],
+    testimonials: INITIAL_TESTIMONIALS,
     messages: [],
     settings: INITIAL_SETTINGS,
     adminTokens: [],
@@ -811,6 +874,96 @@ app.delete('/api/messages/:id', (req, res) => {
   db.messages = (db.messages || []).filter((m) => m.id !== req.params.id);
   writeDb(db);
   return res.json({ success: true, message: 'Message deleted' });
+});
+
+// ----------------------------------------------------
+// TESTIMONIALS & REVIEWS API
+// ----------------------------------------------------
+app.get('/api/testimonials', (req, res) => {
+  const db = readDb();
+  const isAdmin = checkAuth(req);
+  const includeAll = req.query.all === 'true' && isAdmin;
+
+  let list = db.testimonials || INITIAL_TESTIMONIALS;
+  if (!includeAll) {
+    // Return approved reviews (or reviews without status set, considered approved)
+    list = list.filter((t) => t.status === 'approved' || !t.status);
+  }
+
+  // Sort by createdAt descending
+  const sorted = [...list].sort(
+    (a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime()
+  );
+
+  return res.json({ success: true, testimonials: sorted });
+});
+
+app.post('/api/testimonials', (req, res) => {
+  const db = readDb();
+  const { name, role, quote, rating, status } = req.body;
+
+  if (!name || !quote) {
+    return res.status(400).json({ success: false, message: 'Name and review message are required' });
+  }
+
+  const cleanName = String(name).trim();
+  const cleanRole = String(role || 'Client').trim();
+  const cleanQuote = String(quote).trim();
+  const starRating = Math.min(5, Math.max(1, Number(rating) || 5));
+
+  // Generate initials
+  const parts = cleanName.split(' ').filter(Boolean);
+  const initials = parts.length > 1
+    ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+    : cleanName.slice(0, 2).toUpperCase();
+
+  const newTestimonial = {
+    id: `testi-${Date.now()}-${crypto.randomBytes(3).toString('hex')}`,
+    name: cleanName,
+    role: cleanRole,
+    initials,
+    quote: cleanQuote,
+    rating: starRating,
+    status: status || 'approved', // Auto-approved or approved by default, editable in admin
+    createdAt: new Date().toISOString(),
+  };
+
+  db.testimonials = [newTestimonial, ...(db.testimonials || [])];
+  writeDb(db);
+
+  return res.status(201).json({
+    success: true,
+    message: 'Thank you for your feedback! Review saved successfully.',
+    testimonial: newTestimonial,
+  });
+});
+
+app.patch('/api/testimonials/:id/status', (req, res) => {
+  if (!checkAuth(req)) return res.status(401).json({ success: false, message: 'Unauthorized' });
+  const db = readDb();
+  const { id } = req.params;
+  const { status } = req.body;
+
+  const item = (db.testimonials || []).find((t) => t.id === id);
+  if (!item) {
+    return res.status(404).json({ success: false, message: 'Testimonial not found' });
+  }
+
+  item.status = status || 'approved';
+  writeDb(db);
+
+  return res.json({ success: true, testimonial: item });
+});
+
+app.delete('/api/testimonials/:id', (req, res) => {
+  if (!checkAuth(req)) return res.status(401).json({ success: false, message: 'Unauthorized' });
+  const db = readDb();
+  const { id } = req.params;
+
+  db.testimonials = (db.testimonials || []).filter((t) => t.id !== id);
+  writeDb(db);
+
+  return res.json({ success: true, message: 'Testimonial deleted successfully' });
 });
 
 // ----------------------------------------------------

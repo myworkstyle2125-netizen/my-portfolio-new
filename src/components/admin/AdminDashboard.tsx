@@ -16,17 +16,19 @@ import {
   Settings,
   ShieldCheck,
   Sparkles,
+  Star,
   TrendingUp,
   User,
   X,
 } from 'lucide-react';
-import { AdminSettings, Category, InquiryMessage, PackageItem, Project } from '../../types';
+import { AdminSettings, Category, InquiryMessage, PackageItem, Project, Testimonial } from '../../types';
 import {
   apiGetCategories,
   apiGetMessages,
   apiGetPackages,
   apiGetProjects,
   apiGetSettings,
+  apiGetTestimonials,
   apiLogout,
 } from '../../lib/api';
 import { ProjectsManager } from './ProjectsManager';
@@ -34,6 +36,7 @@ import { CategoriesManager } from './CategoriesManager';
 import { MessagesManager } from './MessagesManager';
 import { PackagesManager } from './PackagesManager';
 import { SettingsManager } from './SettingsManager';
+import { ReviewsManager } from './ReviewsManager';
 import { ProjectEditorModal } from './ProjectEditorModal';
 
 interface AdminDashboardProps {
@@ -41,7 +44,7 @@ interface AdminDashboardProps {
   onLogout: () => void;
 }
 
-type AdminTab = 'dashboard' | 'projects' | 'categories' | 'packages' | 'messages' | 'settings';
+type AdminTab = 'dashboard' | 'projects' | 'categories' | 'packages' | 'messages' | 'reviews' | 'settings';
 
 export function AdminDashboard({ onBackToSite, onLogout }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<AdminTab>('projects');
@@ -51,6 +54,7 @@ export function AdminDashboard({ onBackToSite, onLogout }: AdminDashboardProps) 
   const [categories, setCategories] = useState<Category[]>([]);
   const [messages, setMessages] = useState<InquiryMessage[]>([]);
   const [packages, setPackages] = useState<PackageItem[]>([]);
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [settings, setSettings] = useState<AdminSettings>({
     siteName: 'NIFTYGRAPHY',
     tagline: 'Designing ideas into visual experiences.',
@@ -68,11 +72,12 @@ export function AdminDashboard({ onBackToSite, onLogout }: AdminDashboardProps) 
   const loadData = async () => {
     try {
       setLoading(true);
-      const [p, c, m, pk, s] = await Promise.all([
+      const [p, c, m, pk, t, s] = await Promise.all([
         apiGetProjects(false).catch(() => []),
         apiGetCategories().catch(() => []),
         apiGetMessages().catch(() => []),
         apiGetPackages().catch(() => []),
+        apiGetTestimonials(true).catch(() => []),
         apiGetSettings().catch(() => ({})),
       ]);
 
@@ -80,6 +85,7 @@ export function AdminDashboard({ onBackToSite, onLogout }: AdminDashboardProps) 
       setCategories(c);
       setMessages(m);
       setPackages(pk);
+      setTestimonials(t);
       if (s && s.siteName) setSettings(s);
     } catch (err) {
       console.error('Error loading admin data:', err);
@@ -98,6 +104,7 @@ export function AdminDashboard({ onBackToSite, onLogout }: AdminDashboardProps) 
   };
 
   const unreadMessagesCount = messages.filter((m) => !m.read).length;
+  const pendingReviewsCount = testimonials.filter((t) => t.status === 'pending').length;
   const publishedCount = projects.filter((p) => p.published !== false).length;
   const draftCount = projects.filter((p) => p.published === false).length;
 
@@ -257,6 +264,32 @@ export function AdminDashboard({ onBackToSite, onLogout }: AdminDashboardProps) 
           <button
             type="button"
             onClick={() => {
+              setActiveTab('reviews');
+              setSidebarOpen(false);
+            }}
+            className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-medium transition-colors ${
+              activeTab === 'reviews'
+                ? 'bg-accent/15 text-accent border border-accent/30 font-semibold'
+                : 'text-muted-foreground hover:text-foreground hover:bg-surface'
+            }`}
+          >
+            <span className="flex items-center gap-3">
+              <Star className="h-4 w-4" /> Reviews & Feedback
+            </span>
+            {pendingReviewsCount > 0 ? (
+              <span className="rounded-full bg-amber-400 px-2 py-0.5 text-[0.65rem] font-bold text-black">
+                {pendingReviewsCount} pending
+              </span>
+            ) : (
+              <span className="rounded-full bg-surface border border-border px-2 py-0.5 text-[0.65rem]">
+                {testimonials.length}
+              </span>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
               setActiveTab('settings');
               setSidebarOpen(false);
             }}
@@ -318,6 +351,7 @@ export function AdminDashboard({ onBackToSite, onLogout }: AdminDashboardProps) 
                 {activeTab === 'categories' && 'Portfolio Categories'}
                 {activeTab === 'packages' && 'Design Packages & Pricing'}
                 {activeTab === 'messages' && 'Client Inquiries'}
+                {activeTab === 'reviews' && 'Reviews & Testimonials'}
                 {activeTab === 'settings' && 'CMS & Owner Settings'}
               </h2>
             </div>
@@ -379,7 +413,7 @@ export function AdminDashboard({ onBackToSite, onLogout }: AdminDashboardProps) 
               </div>
 
               {/* Metric Cards Grid */}
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
                 <div
                   onClick={() => setActiveTab('projects')}
                   className="cursor-pointer rounded-2xl border border-border bg-surface p-5 transition-all hover:border-accent/50 hover:shadow-md"
@@ -403,7 +437,7 @@ export function AdminDashboard({ onBackToSite, onLogout }: AdminDashboardProps) 
                     <Layers className="h-5 w-5 text-accent" />
                   </div>
                   <p className="mt-3 text-3xl font-bold font-display text-foreground">{categories.length}</p>
-                  <p className="mt-1 text-[0.7rem] text-muted-foreground">Branding, Thumbnails, Social...</p>
+                  <p className="mt-1 text-[0.7rem] text-muted-foreground">Branding, Thumbnails...</p>
                 </div>
 
                 <div
@@ -411,7 +445,7 @@ export function AdminDashboard({ onBackToSite, onLogout }: AdminDashboardProps) 
                   className="cursor-pointer rounded-2xl border border-border bg-surface p-5 transition-all hover:border-accent/50 hover:shadow-md"
                 >
                   <div className="flex items-center justify-between text-muted-foreground">
-                    <span className="text-xs uppercase tracking-wider font-semibold">Client Inquiries</span>
+                    <span className="text-xs uppercase tracking-wider font-semibold">Inquiries</span>
                     <MessageSquare className="h-5 w-5 text-accent" />
                   </div>
                   <p className="mt-3 text-3xl font-bold font-display text-foreground">{messages.length}</p>
@@ -421,11 +455,25 @@ export function AdminDashboard({ onBackToSite, onLogout }: AdminDashboardProps) 
                 </div>
 
                 <div
+                  onClick={() => setActiveTab('reviews')}
+                  className="cursor-pointer rounded-2xl border border-border bg-surface p-5 transition-all hover:border-accent/50 hover:shadow-md"
+                >
+                  <div className="flex items-center justify-between text-muted-foreground">
+                    <span className="text-xs uppercase tracking-wider font-semibold">Client Reviews</span>
+                    <Star className="h-5 w-5 text-accent" />
+                  </div>
+                  <p className="mt-3 text-3xl font-bold font-display text-foreground">{testimonials.length}</p>
+                  <p className="mt-1 text-[0.7rem] text-emerald-400 font-medium">
+                    {testimonials.filter(t => t.status === 'approved' || !t.status).length} live on site
+                  </p>
+                </div>
+
+                <div
                   onClick={() => setActiveTab('packages')}
                   className="cursor-pointer rounded-2xl border border-border bg-surface p-5 transition-all hover:border-accent/50 hover:shadow-md"
                 >
                   <div className="flex items-center justify-between text-muted-foreground">
-                    <span className="text-xs uppercase tracking-wider font-semibold">Pricing Packages</span>
+                    <span className="text-xs uppercase tracking-wider font-semibold">Packages</span>
                     <Package className="h-5 w-5 text-accent" />
                   </div>
                   <p className="mt-3 text-3xl font-bold font-display text-foreground">{packages.length}</p>
@@ -540,6 +588,13 @@ export function AdminDashboard({ onBackToSite, onLogout }: AdminDashboardProps) 
           {activeTab === 'messages' && (
             <MessagesManager
               messages={messages}
+              onRefresh={loadData}
+            />
+          )}
+
+          {activeTab === 'reviews' && (
+            <ReviewsManager
+              testimonials={testimonials}
               onRefresh={loadData}
             />
           )}

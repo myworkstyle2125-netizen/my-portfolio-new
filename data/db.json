@@ -1,0 +1,794 @@
+{
+  "projects": [
+    {
+      "id": "proj-1",
+      "slug": "jck-crypto-exchange",
+      "title": "JCK Crypto Exchange",
+      "category": "Branding",
+      "categoryLabel": "Brand & Identity",
+      "client": "JCK Exchange",
+      "year": "2025",
+      "shortDescription": "Complete visual identity and social media design system for crypto trading.",
+      "description": "A complete visual identity and social media system for a crypto trading platform that needed to feel secure, fast and unmistakably modern.",
+      "objective": "Build trust in a crowded market. The brand had to read as institutional-grade while staying approachable for first-time traders.",
+      "process": "Started with market and competitor mapping, then built a geometric mark from the exchange's candlestick motif. The identity was extended into a gradient-led social system with reusable templates for market updates, launches and announcements.",
+      "challenge": "Standing out in a competitive crypto landscape while conveying rock-solid security and intuitive usability.",
+      "creativeDirection": "Dark glassmorphic layers, neon cyan and violet gradients, and sharp geometric typography.",
+      "results": "40% increase in social media engagement and a cohesive brand launch across 5 channels.",
+      "tools": [
+        "Illustrator",
+        "Photoshop",
+        "Figma",
+        "After Effects"
+      ],
+      "servicesProvided": [
+        "Brand Identity",
+        "Social Media Templates",
+        "Visual Guidelines",
+        "Motion Teasers"
+      ],
+      "thumbnail": "/assets/work-jck.jpg",
+      "hero": "/assets/work-jck.jpg",
+      "gallery": [
+        "/assets/work-jck.jpg",
+        "/assets/work-social.jpg",
+        "/assets/work-identity.jpg"
+      ],
+      "shape": "wide",
+      "featured": true,
+      "published": true,
+      "displayOrder": 1,
+      "createdAt": "2025-01-15T00:00:00.000Z",
+      "updatedAt": "2025-01-15T00:00:00.000Z"
+    },
+    {
+      "id": "proj-2",
+      "slug": "urban-streetwear-tshirt",
+      "title": "Urban Streetwear Vector Graphic",
+      "category": "T Shirt",
+      "categoryLabel": "T-Shirt & Apparel",
+      "client": "Kuro Studio Tokyo",
+      "year": "2025",
+      "shortDescription": "High-detail vector artwork for streetwear apparel drop with distressed cybernetic typography.",
+      "description": "Bespoke high-detail vector artwork for an autumn streetwear apparel drop featuring distressed typography and cybernetic aesthetic elements.",
+      "objective": "Create an iconic hero graphic that prints razor-sharp with screen-printing and high-density puff print techniques.",
+      "process": "Vector illustration drafting in Illustrator, texture blending in Photoshop, and color-separation setup for multi-screen apparel manufacturing.",
+      "challenge": "Translating fine line weights and halftone dot densities without losing fidelity during screen mesh exposure.",
+      "creativeDirection": "Cyberpunk aesthetics, dystopian Kanji lettering, and distressed halftone stippling.",
+      "results": "Over 2,500 units sold in the opening week with zero printing defect returns.",
+      "tools": [
+        "Illustrator",
+        "Photoshop"
+      ],
+      "servicesProvided": [
+        "Apparel Graphics",
+        "Color Separation",
+        "Tech Pack Specs"
+      ],
+      "thumbnail": "/assets/work-campaign.jpg",
+      "hero": "/assets/work-campaign.jpg",
+      "gallery": [
+        "/assets/work-campaign.jpg",
+        "/assets/work-identity.jpg"
+      ],
+      "shape": "tall",
+      "featured": true,
+      "published": true,
+      "displayOrder": 2,
+      "createdAt": "2025-02-05T00:00:00.000Z",
+      "updatedAt": "2025-02-05T00:00:00.000Z"
+    },
+    {
+      "id": "proj-3",
+      "slug": "nifty-academy",
+      "title": "Nifty Academy Platform",
+      "category": "UI/UX",
+      "categoryLabel": "UI/UX & Web Design",
+      "client": "Nifty Academy",
+      "year": "2025",
+      "shortDescription": "Digital design language and course branding for an online learning platform.",
+      "description": "Digital design language and course branding for an online learning platform, covering the marketing site, lesson interface and content templates.",
+      "objective": "Make long study sessions comfortable and make every course feel like part of one family without flattening their individual personalities.",
+      "process": "Defined a dark-first interface palette with per-course accent colours, built a type scale tuned for dense reading, then produced a component kit that the team can extend for new courses.",
+      "challenge": "Organizing complex course materials into a distraction-free and motivating learning environment.",
+      "creativeDirection": "Clean editorial typography, focused dark surface contrasts, and modular card systems.",
+      "results": "Over 1,200 active students enrolled with overwhelmingly positive feedback on course clarity.",
+      "tools": [
+        "Figma",
+        "Illustrator",
+        "Photoshop"
+      ],
+      "servicesProvided": [
+        "UI/UX Design",
+        "Design System",
+        "Course Thumbnails"
+      ],
+      "thumbnail": "/assets/work-academy.jpg",
+      "hero": "/assets/work-academy.jpg",
+      "gallery": [
+        "/assets/work-academy.jpg",
+        "/assets/work-social.jpg"
+      ],
+      "shape": "tall",
+      "featured": true,
+      "published": true,
+      "displayOrder": 3,
+      "createdAt": "2025-02-01T00:00:00.000Z",
+      "updatedAt": "2025-02-01T00:00:00.000Z"
+    },
+    {
+      "id": "proj-4",
+      "slug": "youtube-thumbnail-collection",
+      "title": "High-CTR YouTube Thumbnails",
+      "category": "Thumbnails",
+      "categoryLabel": "Thumbnails & Social",
+      "client": "Multiple Creators",
+      "year": "2025",
+      "shortDescription": "High-contrast thumbnails engineered for maximum click-through rates at mobile scale.",
+      "description": "A running series of high-contrast thumbnails designed around one rule: readable at 200 pixels wide.",
+      "objective": "Lift click-through rate without resorting to clickbait. Each thumbnail had to communicate the video's promise in under a second.",
+      "process": "Built a repeatable formula — isolated subject, controlled colour temperature, three-word maximum type block — then tested variants against channel analytics and refined the winners.",
+      "challenge": "Compressing storytelling into a tiny canvas that beats dense algorithmic feeds.",
+      "creativeDirection": "Dynamic facial emotion cutouts, 3D rim lighting, and punchy high-contrast typography.",
+      "results": "Average CTR increase of +3.8% across 12 client YouTube channels.",
+      "tools": [
+        "Photoshop",
+        "Illustrator"
+      ],
+      "servicesProvided": [
+        "YouTube Thumbnails",
+        "Channel Art",
+        "Brand Kits"
+      ],
+      "thumbnail": "/assets/work-thumbnails.jpg",
+      "hero": "/assets/work-thumbnails.jpg",
+      "gallery": [
+        "/assets/work-thumbnails.jpg",
+        "/assets/work-social.jpg"
+      ],
+      "shape": "wide",
+      "featured": true,
+      "published": true,
+      "displayOrder": 4,
+      "createdAt": "2025-01-28T00:00:00.000Z",
+      "updatedAt": "2025-01-28T00:00:00.000Z"
+    },
+    {
+      "id": "proj-5",
+      "slug": "social-media-design-collection",
+      "title": "Daily Social Content System",
+      "category": "Social Media",
+      "categoryLabel": "Social Media Design",
+      "client": "Assorted Brands",
+      "year": "2025",
+      "shortDescription": "High-engagement post, story, and carousel systems for daily publishing brands.",
+      "description": "Post, story and carousel systems designed for brands that publish daily and need speed without losing craft.",
+      "objective": "Make consistent output possible for small teams — templates that are hard to break and quick to fill.",
+      "process": "Audited each brand’s feed, defined a modular grid and a fixed set of layout archetypes, then delivered editable Figma and Canva kits with usage notes.",
+      "challenge": "Maintaining brand distinction across fast-paced daily publishing cycles.",
+      "creativeDirection": "Consistent 4:5 and 9:16 layout grids, striking focal points, and branded data visualization callouts.",
+      "results": "Over 200 bespoke social assets published across Instagram, TikTok, and LinkedIn.",
+      "tools": [
+        "Figma",
+        "Photoshop",
+        "Canva"
+      ],
+      "servicesProvided": [
+        "Carousel Design",
+        "Story Templates",
+        "Post Packs",
+        "Canva Kits"
+      ],
+      "thumbnail": "/assets/work-social.jpg",
+      "hero": "/assets/work-social.jpg",
+      "gallery": [
+        "/assets/work-social.jpg",
+        "/assets/work-jck.jpg",
+        "/assets/work-thumbnails.jpg"
+      ],
+      "shape": "wide",
+      "featured": true,
+      "published": true,
+      "displayOrder": 5,
+      "createdAt": "2025-02-14T00:00:00.000Z",
+      "updatedAt": "2025-02-14T00:00:00.000Z"
+    },
+    {
+      "id": "proj-6",
+      "slug": "cyberpunk-tshirt-collection",
+      "title": "Cyberpunk Apparel Graphic",
+      "category": "T Shirt",
+      "categoryLabel": "T-Shirt Design",
+      "client": "NeoVibe Apparel",
+      "year": "2024",
+      "shortDescription": "Futuristic oversized graphic tee artwork with Japanese typography and halftone gradients.",
+      "description": "Futuristic oversized graphic tee artwork incorporating Japanese kanji typography, glitch art and high-contrast halftone dots.",
+      "objective": "Deliver an eye-catching statement back-print graphic that resonates with the gaming and streetwear community.",
+      "process": "Concept moodboarding, custom hand-drawn typography, chromatic aberration distortion and digital vector finishing.",
+      "challenge": "Ensuring high-density vector line art reproduces with maximum impact on dark textile fabrics.",
+      "creativeDirection": "Glitch art textures, neon magenta-cyan accents, and bold typography scales.",
+      "results": "Selected as flagship winter drop headliner with sold-out stock.",
+      "tools": [
+        "Photoshop",
+        "Illustrator"
+      ],
+      "servicesProvided": [
+        "T-Shirt Graphic",
+        "Apparel Mockups",
+        "Vector Print Master"
+      ],
+      "thumbnail": "/assets/work-campaign.jpg",
+      "hero": "/assets/work-campaign.jpg",
+      "gallery": [
+        "/assets/work-campaign.jpg",
+        "/assets/work-jck.jpg"
+      ],
+      "shape": "tall",
+      "featured": true,
+      "published": true,
+      "displayOrder": 6,
+      "createdAt": "2024-11-12T00:00:00.000Z",
+      "updatedAt": "2024-11-12T00:00:00.000Z"
+    },
+    {
+      "id": "proj-7",
+      "slug": "creative-brand-identity",
+      "title": "Monochrome Brand Identity",
+      "category": "Branding",
+      "categoryLabel": "Branding & Identity",
+      "client": "Studio Noir",
+      "year": "2024",
+      "shortDescription": "Monochrome identity system with a single electric accent across stationery and packaging.",
+      "description": "A monochrome identity system with a single electric accent, applied across stationery, signage and packaging.",
+      "objective": "Give a young studio a mark with enough restraint to age well and enough character to stand out on a shelf.",
+      "process": "Sketching, logo grid construction, then a full guideline document covering spacing, misuse, colour behaviour on dark and light surfaces, and print specification.",
+      "challenge": "Balancing minimalist restraint with distinctive brand personality that prints crisply across physical textures.",
+      "creativeDirection": "High-contrast monochrome foundations accented by electric violet highlights.",
+      "results": "Unified brand asset library delivered with comprehensive print-ready vector packages.",
+      "tools": [
+        "Illustrator",
+        "Photoshop",
+        "InDesign"
+      ],
+      "servicesProvided": [
+        "Brand Identity",
+        "Print Design",
+        "Stationery Systems",
+        "Packaging"
+      ],
+      "thumbnail": "/assets/work-identity.jpg",
+      "hero": "/assets/work-identity.jpg",
+      "gallery": [
+        "/assets/work-identity.jpg",
+        "/assets/work-campaign.jpg"
+      ],
+      "shape": "wide",
+      "featured": true,
+      "published": true,
+      "displayOrder": 7,
+      "createdAt": "2024-11-20T00:00:00.000Z",
+      "updatedAt": "2024-11-20T00:00:00.000Z"
+    },
+    {
+      "id": "proj-8",
+      "slug": "fintech-carousel-series",
+      "title": "Fintech Instagram Carousels",
+      "category": "Social Media",
+      "categoryLabel": "Social Media & Infographics",
+      "client": "WealthPulse",
+      "year": "2025",
+      "shortDescription": "Educational carousel layouts explaining market concepts with visual storytelling.",
+      "description": "10-slide educational carousel layouts explaining market concepts with visual storytelling and crisp data graphics.",
+      "objective": "Maximize carousel swipe-through rate and bookmark/save engagement metrics on Instagram and LinkedIn.",
+      "process": "Slide-by-slide hook design, seamless swipe transitions across split graphics, and bold typographic hierarchy.",
+      "challenge": "Simplifying complex technical indicators into visual diagrams that captivate mobile viewers.",
+      "creativeDirection": "Clean card elevations, luminous green trend accents, and fluid swipe lines.",
+      "results": "Achieved 3.2x average bookmark rate compared to previous text-heavy posts.",
+      "tools": [
+        "Figma",
+        "Photoshop"
+      ],
+      "servicesProvided": [
+        "Carousel Templates",
+        "Infographic Design",
+        "Story Adaptations"
+      ],
+      "thumbnail": "/assets/work-social.jpg",
+      "hero": "/assets/work-social.jpg",
+      "gallery": [
+        "/assets/work-social.jpg",
+        "/assets/work-jck.jpg"
+      ],
+      "shape": "tall",
+      "featured": true,
+      "published": true,
+      "displayOrder": 8,
+      "createdAt": "2025-02-18T00:00:00.000Z",
+      "updatedAt": "2025-02-18T00:00:00.000Z"
+    },
+    {
+      "id": "proj-9",
+      "slug": "gaming-viral-thumbnails",
+      "title": "Gaming & Tech Thumbnails",
+      "category": "Thumbnails",
+      "categoryLabel": "YouTube Thumbnails",
+      "client": "TechPulse Media",
+      "year": "2025",
+      "shortDescription": "High-impact 3D lighting composite thumbnails tailored for tech reviews and game walkthroughs.",
+      "description": "High-impact 3D lighting composite thumbnails tailored for tech reviews and game walkthrough episodes.",
+      "objective": "Outperform competitor thumbnails in algorithmic suggested feeds with sharp focus cues and readable typography.",
+      "process": "Subject multi-layer color grading, custom 3D typography extrusion, glow pass composites, and split-screen contrast testing.",
+      "challenge": "Generating distinct visual tension without crossing into clutter or deceptive clickbait.",
+      "creativeDirection": "High-saturation focal lighting, neon halos, and dynamic facial expression cutouts.",
+      "results": "Drove 450,000+ views in 14 days with strong viewer retention signals.",
+      "tools": [
+        "Photoshop",
+        "After Effects"
+      ],
+      "servicesProvided": [
+        "YouTube Cover Art",
+        "Asset Cutouts",
+        "Visual Packaging"
+      ],
+      "thumbnail": "/assets/work-thumbnails.jpg",
+      "hero": "/assets/work-thumbnails.jpg",
+      "gallery": [
+        "/assets/work-thumbnails.jpg",
+        "/assets/hero-abstract.jpg"
+      ],
+      "shape": "wide",
+      "featured": true,
+      "published": true,
+      "displayOrder": 9,
+      "createdAt": "2025-01-10T00:00:00.000Z",
+      "updatedAt": "2025-01-10T00:00:00.000Z"
+    },
+    {
+      "id": "proj-10",
+      "slug": "vintage-motor-tshirt",
+      "title": "Vintage Moto Club T-Shirt",
+      "category": "T Shirt",
+      "categoryLabel": "T-Shirt & Merchandise",
+      "client": "Apex Riders Club",
+      "year": "2024",
+      "shortDescription": "Handcrafted vintage typography and engine badge illustration for heavy-weight tees.",
+      "description": "Handcrafted vintage typography and engine badge illustration designed for premium cotton heavy-weight tees.",
+      "objective": "Capture an authentic 70s heritage garage vibe with hand-inked textures and badge geometries.",
+      "process": "Pencil sketches converted to clean bezier vector paths with distressed grunge overlays for authentic vintage printing.",
+      "challenge": "Crafting intricate linework that survives standard plastisol silk-screen printing washes.",
+      "creativeDirection": "Hand-lettered serifs, retro piston badges, and distressed parchment distressing.",
+      "results": "Official club merchandise line established across 4 colorways.",
+      "tools": [
+        "Illustrator",
+        "Photoshop"
+      ],
+      "servicesProvided": [
+        "Vintage Artwork",
+        "Color Variations",
+        "Vector Print Master"
+      ],
+      "thumbnail": "/assets/work-campaign.jpg",
+      "hero": "/assets/work-campaign.jpg",
+      "gallery": [
+        "/assets/work-campaign.jpg",
+        "/assets/work-identity.jpg"
+      ],
+      "shape": "tall",
+      "featured": true,
+      "published": true,
+      "displayOrder": 10,
+      "createdAt": "2024-10-05T00:00:00.000Z",
+      "updatedAt": "2024-10-05T00:00:00.000Z"
+    },
+    {
+      "id": "proj-11",
+      "slug": "crypto-trading-dashboard-ui",
+      "title": "Apex Trade Interface UI",
+      "category": "UI/UX",
+      "categoryLabel": "UI/UX & Web App",
+      "client": "Apex Capital",
+      "year": "2025",
+      "shortDescription": "Modular, high-density dark mode trading terminal dashboard with responsive chart widgets.",
+      "description": "A modular, high-density dark mode trading terminal dashboard with responsive chart widgets and live order books.",
+      "objective": "Optimize data density without visual fatigue during prolonged multi-monitor market analysis sessions.",
+      "process": "User flow wireframing, dark palette contrast validation, component design system creation, and interactive Figma prototyping.",
+      "challenge": "Balancing complex real-time data widgets with uncluttered visual navigation.",
+      "creativeDirection": "Deep charcoal slate foundation with electric emerald and ruby order book indicators.",
+      "results": "Reduced user order placement friction time by 35% in usability testing.",
+      "tools": [
+        "Figma",
+        "Illustrator"
+      ],
+      "servicesProvided": [
+        "UI/UX Design",
+        "Design System",
+        "Interactive Prototype"
+      ],
+      "thumbnail": "/assets/work-academy.jpg",
+      "hero": "/assets/work-academy.jpg",
+      "gallery": [
+        "/assets/work-academy.jpg",
+        "/assets/work-jck.jpg"
+      ],
+      "shape": "wide",
+      "featured": true,
+      "published": true,
+      "displayOrder": 11,
+      "createdAt": "2025-01-20T00:00:00.000Z",
+      "updatedAt": "2025-01-20T00:00:00.000Z"
+    },
+    {
+      "id": "proj-12",
+      "slug": "luxury-print-stationery",
+      "title": "Luxury Foil Stationery Suite",
+      "category": "Print Design",
+      "categoryLabel": "Print & Packaging",
+      "client": "Elysian Estates",
+      "year": "2024",
+      "shortDescription": "Gold foil stamped business cards, embossed letterheads, and tactile presentation folders.",
+      "description": "Gold foil stamped business cards, embossed letterheads, and tactile presentation folders for a luxury property group.",
+      "objective": "Communicate timeless prestige and meticulous attention to detail through premium physical print finishes.",
+      "process": "Die-line drafting, spot-UV and foil layer masking, pantone metallic ink calibration, and physical paper stock selection.",
+      "challenge": "Aligning precise foil stamping registration across heavy cotton card stocks.",
+      "creativeDirection": "Minimalist typography, deep forest green tactile cardstock, and warm gold foil.",
+      "results": "Delivered flagship presentation packages used across ultra-prime property sales.",
+      "tools": [
+        "InDesign",
+        "Illustrator",
+        "Photoshop"
+      ],
+      "servicesProvided": [
+        "Print Collateral",
+        "Packaging",
+        "Foil Die-lines"
+      ],
+      "thumbnail": "/assets/work-identity.jpg",
+      "hero": "/assets/work-identity.jpg",
+      "gallery": [
+        "/assets/work-identity.jpg",
+        "/assets/work-campaign.jpg"
+      ],
+      "shape": "wide",
+      "featured": true,
+      "published": true,
+      "displayOrder": 12,
+      "createdAt": "2024-09-15T00:00:00.000Z",
+      "updatedAt": "2024-09-15T00:00:00.000Z"
+    },
+    {
+      "id": "proj-13",
+      "slug": "festival-event-poster",
+      "title": "Neon Pulse Festival Poster",
+      "category": "Print Design",
+      "categoryLabel": "Print & Event Posters",
+      "client": "Pulse Music Festival",
+      "year": "2024",
+      "shortDescription": "Vibrant neon gradient typography and abstract 3D fluid art poster campaign.",
+      "description": "Vibrant neon gradient typography and abstract 3D fluid art poster campaign for an electronic music festival.",
+      "objective": "Generate massive organic social shares and street visibility through luminous typography and energetic visuals.",
+      "process": "3D generative fluid simulation, layered typography composition, and large-format print proofing.",
+      "challenge": "Maintaining neon color brilliance across CMYK printing separation profiles.",
+      "creativeDirection": "Fluorescent CMYK spot channels, fluid metallic chrome typography, and kinetic energy.",
+      "results": "Featured across city transit centers with 10,000+ tickets sold out.",
+      "tools": [
+        "Photoshop",
+        "Illustrator"
+      ],
+      "servicesProvided": [
+        "Event Posters",
+        "Billboard Layouts",
+        "Digital Passes"
+      ],
+      "thumbnail": "/assets/hero-abstract.jpg",
+      "hero": "/assets/hero-abstract.jpg",
+      "gallery": [
+        "/assets/hero-abstract.jpg",
+        "/assets/work-campaign.jpg"
+      ],
+      "shape": "tall",
+      "featured": true,
+      "published": true,
+      "displayOrder": 13,
+      "createdAt": "2024-08-10T00:00:00.000Z",
+      "updatedAt": "2024-08-10T00:00:00.000Z"
+    },
+    {
+      "id": "proj-14",
+      "slug": "social-growth-banner-kit",
+      "title": "Creator Brand Social Kit",
+      "category": "Social Media",
+      "categoryLabel": "Social Media Kit",
+      "client": "Nova Media Group",
+      "year": "2025",
+      "shortDescription": "Multi-platform social branding suite covering YouTube banners, Twitter headers, and story packs.",
+      "description": "A multi-platform social branding suite covering YouTube banners, Twitter headers, TikTok avatars, and story packs.",
+      "objective": "Establish an immediately recognizable personal brand identity across all major content channels.",
+      "process": "Channel audit, unified color tokens, responsive banner safe-zone mapping for desktop and mobile devices.",
+      "challenge": "Ensuring critical avatar and banner elements remain visible across varying device crop ratios.",
+      "creativeDirection": "Sleek dark gradient glass with vibrant brand badges and modern typography.",
+      "results": "Unified digital presence rolled out across 4 social media platforms.",
+      "tools": [
+        "Photoshop",
+        "Figma",
+        "Illustrator"
+      ],
+      "servicesProvided": [
+        "Channel Headers",
+        "Story Packs",
+        "Profile Badges"
+      ],
+      "thumbnail": "/assets/work-social.jpg",
+      "hero": "/assets/work-social.jpg",
+      "gallery": [
+        "/assets/work-social.jpg",
+        "/assets/work-thumbnails.jpg"
+      ],
+      "shape": "wide",
+      "featured": true,
+      "published": true,
+      "displayOrder": 14,
+      "createdAt": "2025-01-05T00:00:00.000Z",
+      "updatedAt": "2025-01-05T00:00:00.000Z"
+    },
+    {
+      "id": "proj-15",
+      "slug": "podcast-masterclass-thumbnails",
+      "title": "Podcast Masterclass Covers",
+      "category": "Thumbnails",
+      "categoryLabel": "Thumbnails & Covers",
+      "client": "The Deep Dive Podcast",
+      "year": "2025",
+      "shortDescription": "Cinematic portrait composite thumbnails with custom lighting effects and clean episodic badges.",
+      "description": "Cinematic portrait composite thumbnails with custom lighting effects and clean episodic badge numbering.",
+      "objective": "Drive consistent CTR above 8% across episode releases with high-contrast guest focal treatments.",
+      "process": "Studio raw photo retouching, background frequency separation, custom title typography, and mobile feed testing.",
+      "challenge": "Balancing guest portrait prominence with fast-reading 3-word title hooks.",
+      "creativeDirection": "Cinematic warm-cool split lighting, subtle grain, and high-impact title typography.",
+      "results": "Episode CTR increased from 4.1% to 8.7% within the first 48 hours of each upload.",
+      "tools": [
+        "Photoshop",
+        "Lightroom"
+      ],
+      "servicesProvided": [
+        "Podcast Thumbnails",
+        "Spotify Covers",
+        "Quote Cards"
+      ],
+      "thumbnail": "/assets/work-thumbnails.jpg",
+      "hero": "/assets/work-thumbnails.jpg",
+      "gallery": [
+        "/assets/work-thumbnails.jpg",
+        "/assets/work-social.jpg"
+      ],
+      "shape": "tall",
+      "featured": true,
+      "published": true,
+      "displayOrder": 15,
+      "createdAt": "2025-02-12T00:00:00.000Z",
+      "updatedAt": "2025-02-12T00:00:00.000Z"
+    },
+    {
+      "id": "proj-16",
+      "slug": "minimalist-badge-tshirt",
+      "title": "Minimalist Monogram Tee",
+      "category": "T Shirt",
+      "categoryLabel": "T-Shirt Design",
+      "client": "Vanguard Apparel",
+      "year": "2025",
+      "shortDescription": "Clean geometric emblem and pocket print typography created for streetwear merchandise lines.",
+      "description": "Clean geometric emblem and pocket print typography created for contemporary streetwear merchandise lines.",
+      "objective": "Create versatile apparel prints that look timeless across oversized tee and hoodie silhouettes.",
+      "process": "Minimalist logo geometry drafting, scale testing, mockup generation, and garment print specifications.",
+      "challenge": "Developing an emblem that reads boldly at 3 inches pocket size and 12 inches back print scale.",
+      "creativeDirection": "Clean Swiss geometric layout, high-contrast monochrome, and refined tracking.",
+      "results": "Adopted as perpetual core staple in the client’s essential merchandise lineup.",
+      "tools": [
+        "Illustrator",
+        "Photoshop"
+      ],
+      "servicesProvided": [
+        "Apparel Graphics",
+        "Pocket Prints",
+        "Tech Spec Sheets"
+      ],
+      "thumbnail": "/assets/work-campaign.jpg",
+      "hero": "/assets/work-campaign.jpg",
+      "gallery": [
+        "/assets/work-campaign.jpg",
+        "/assets/work-identity.jpg"
+      ],
+      "shape": "wide",
+      "featured": true,
+      "published": true,
+      "displayOrder": 16,
+      "createdAt": "2025-02-10T00:00:00.000Z",
+      "updatedAt": "2025-02-10T00:00:00.000Z"
+    }
+  ],
+  "categories": [
+    {
+      "id": "cat-1",
+      "name": "Branding",
+      "slug": "branding",
+      "description": "Logo design, brand identity, and complete visual systems",
+      "displayOrder": 1,
+      "published": true
+    },
+    {
+      "id": "cat-2",
+      "name": "Social Media",
+      "slug": "social-media",
+      "description": "Carousels, posts, banners, and feed templates",
+      "displayOrder": 2,
+      "published": true
+    },
+    {
+      "id": "cat-3",
+      "name": "Thumbnails",
+      "slug": "thumbnails",
+      "description": "High-CTR YouTube and video thumbnails",
+      "displayOrder": 3,
+      "published": true
+    },
+    {
+      "id": "cat-4",
+      "name": "T Shirt",
+      "slug": "t-shirt",
+      "description": "Apparel graphic design, merchandise, and vector artwork",
+      "displayOrder": 4,
+      "published": true
+    },
+    {
+      "id": "cat-5",
+      "name": "UI/UX",
+      "slug": "ui-ux",
+      "description": "Web design, mobile interfaces, and digital experiences",
+      "displayOrder": 5,
+      "published": true
+    },
+    {
+      "id": "cat-6",
+      "name": "Print Design",
+      "slug": "print-design",
+      "description": "Posters, flyers, business cards, and stationery",
+      "displayOrder": 6,
+      "published": true
+    },
+    {
+      "id": "cat-7",
+      "name": "Advertising",
+      "slug": "advertising",
+      "description": "Marketing creatives, display banners, and promotional campaigns",
+      "displayOrder": 7,
+      "published": true
+    },
+    {
+      "id": "cat-8",
+      "name": "Video / Motion",
+      "slug": "video-motion",
+      "description": "Motion graphics, reels, and video editing",
+      "displayOrder": 8,
+      "published": true
+    }
+  ],
+  "packages": [
+    {
+      "id": "pkg-1",
+      "name": "Starter Visual Pack",
+      "price": "Rs. 5,000 – Rs. 10,000",
+      "description": "Perfect for creators and small businesses needing quick, high-impact social or thumbnail graphics.",
+      "features": [
+        "3 High-CTR YouTube Thumbnails OR Social Posts",
+        "2 Revisions per design",
+        "High-res JPG & PNG files",
+        "Fast delivery within 48 hours"
+      ],
+      "popular": false,
+      "deliveryTime": "2 Days"
+    },
+    {
+      "id": "pkg-2",
+      "name": "Brand & Social Suite",
+      "price": "Rs. 15,000 – Rs. 35,000",
+      "description": "Complete visual identity overhaul for growing brands and businesses wanting cohesive polish.",
+      "features": [
+        "Primary Logo + Secondary Variations",
+        "Brand Color Palette & Typography System",
+        "6 Social Media Templates (Figma/Canva)",
+        "Brand Guidelines Sheet",
+        "Unlimited Revisions on initial concept"
+      ],
+      "popular": true,
+      "deliveryTime": "5-7 Days"
+    },
+    {
+      "id": "pkg-3",
+      "name": "Full Retainer / Custom",
+      "price": "Rs. 50,000+",
+      "description": "Dedicated monthly design partner for active brands requiring ongoing graphics, UI, and marketing support.",
+      "features": [
+        "Dedicated design bandwidth",
+        "Priority turnaround & communication",
+        "Thumbnails, Socials, Banners, Print & UI",
+        "Source files (PSD, AI, Figma) included"
+      ],
+      "popular": false,
+      "deliveryTime": "Monthly Ongoing"
+    }
+  ],
+  "testimonials": [
+    {
+      "id": "testi-1",
+      "name": "Amara Silva",
+      "role": "Founder, Lumen Studio",
+      "initials": "AS",
+      "quote": "Niftygraphy එක්ක වැඩ කරන්න ලැබුණු එක ලොකු පහසුවක් වුණා. අපේ Brand identity එක සහ social media designs ටික අපි හිතුවටත් වඩා ගොඩක් Quality එකට, වෙලාවටම ready කරලා දුන්නා.",
+      "rating": 5,
+      "status": "approved",
+      "createdAt": "2025-01-10T10:00:00.000Z"
+    },
+    {
+      "id": "testi-2",
+      "name": "Dev Rajan",
+      "role": "Content Creator, 180K Subscribers",
+      "initials": "DR",
+      "quote": "My YouTube CTR went up significantly within just two weeks of using these thumbnail designs. The visual hierarchy and color contrast make every video pop on the feed.",
+      "rating": 5,
+      "status": "approved",
+      "createdAt": "2025-01-22T12:00:00.000Z"
+    },
+    {
+      "id": "testi-3",
+      "name": "Kavishka Perera",
+      "role": "Co-Founder, Apex Digital",
+      "initials": "KP",
+      "quote": "අපේ Digital marketing campaign එකට අවශ්ය වුණු Banner designs සහ Post templates ටික ඉතාම professional මට්ටමෙන් ලබා දුන්නා. Great communication and fast delivery!",
+      "rating": 5,
+      "status": "approved",
+      "createdAt": "2025-02-01T09:30:00.000Z"
+    },
+    {
+      "id": "testi-4",
+      "name": "Chloe Whitfield",
+      "role": "Marketing Lead, Northbound",
+      "initials": "CW",
+      "quote": "Fast, creative, and extremely detail-oriented. They handled our entire print and digital promotional materials smoothly without a single layout issue.",
+      "rating": 5,
+      "status": "approved",
+      "createdAt": "2025-02-05T14:15:00.000Z"
+    },
+    {
+      "id": "testi-5",
+      "name": "Marcus Vance",
+      "role": "E-Commerce Store Owner",
+      "initials": "MV",
+      "quote": "The apparel merch designs exceeded our expectations. All vector files were 100% print-ready, and our first T-shirt batch sold out much faster than planned.",
+      "rating": 5,
+      "status": "approved",
+      "createdAt": "2025-02-12T11:00:00.000Z"
+    },
+    {
+      "id": "testi-6",
+      "name": "Elena Rostova",
+      "role": "UI/UX Product Designer",
+      "initials": "ER",
+      "quote": "Outstanding visual aesthetics! They translated our complex design brief into clean, modern graphics with incredible precision and speed.",
+      "rating": 5,
+      "status": "approved",
+      "createdAt": "2025-02-18T16:45:00.000Z"
+    }
+  ],
+  "messages": [],
+  "settings": {
+    "siteName": "NIFTYGRAPHY",
+    "tagline": "Designing ideas into visual experiences.",
+    "email": "niftygraphy24@gmail.com",
+    "whatsappNumber": "94759700219",
+    "whatsappLabel": "+94 75 970 0219",
+    "location": "Colombo, Sri Lanka — working worldwide",
+    "ownerName": "P.D. Yadeesha Shen Perera",
+    "bio": "Hi, I'm P.D. Yadeesha Shen Perera. With 3+ years of experience in graphic design, I focus on crafting distinct visual identities and engaging design solutions. I blend thoughtful aesthetics with functional layout to build memorable brand experiences.",
+    "adminPasswordHash": "4208dee19b083636284ad28f9b2117cc56e1c57abbe3e417a3432e33b9c70f0c"
+  },
+  "adminTokens": []
+}

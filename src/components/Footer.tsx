@@ -1,11 +1,6 @@
-import { Lock } from 'lucide-react';
 import { SITE_CONFIG } from '../data/siteData';
 
-interface FooterProps {
-  onOpenAdmin?: () => void;
-}
-
-export function Footer({ onOpenAdmin }: FooterProps) {
+export function Footer() {
   return (
     <footer className="border-t border-border/70">
       <div className="mx-auto max-w-[110rem] px-5 py-16 sm:px-8 lg:px-14">
@@ -62,21 +57,12 @@ export function Footer({ onOpenAdmin }: FooterProps) {
 
         <div className="mt-12 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-t border-border/40 pt-6">
           <p className="text-xs text-muted-foreground">
-            © 2026 Niftygraphy. All rights reserved.
+            © 2026 NIFTYGRAPHY. All rights reserved.
           </p>
 
-          <button
-            type="button"
-            onClick={() => {
-              if (onOpenAdmin) onOpenAdmin();
-              else {
-                window.location.hash = '#admin';
-              }
-            }}
-            className="inline-flex items-center gap-1.5 text-xs text-muted-foreground/60 hover:text-accent transition-colors"
-          >
-            <Lock className="h-3 w-3" /> Owner Admin Portal
-          </button>
+          <p className="text-xs text-muted-foreground">
+            Graphic Designer • Creative Designer • Visual Storyteller
+          </p>
         </div>
       </div>
     </footer>

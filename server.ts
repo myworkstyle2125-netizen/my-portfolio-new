@@ -505,15 +505,22 @@ function checkAuth(req: express.Request): boolean {
 // AUTH API
 // ----------------------------------------------------
 app.post('/api/auth/login', (req, res) => {
-  const { email, password } = req.body;
+  const { email, username, password } = req.body;
+  const identifier = (email || username || '').toLowerCase().trim();
   const db = readDb();
   const inputHash = crypto.createHash('sha256').update(String(password || '')).digest('hex');
 
-  // Accept owner email and password (default: niftygraphy2026 or current set password)
-  const isEmailMatch = !email || email.toLowerCase().trim() === db.settings.email.toLowerCase().trim() || email === 'admin';
+  // Accept owner email, username (niftygraphy, admin, owner) or current settings email
+  const isIdentifierMatch =
+    !identifier ||
+    identifier === db.settings.email.toLowerCase().trim() ||
+    identifier === 'admin' ||
+    identifier === 'niftygraphy' ||
+    identifier === 'owner' ||
+    identifier.includes('niftygraphy');
   const isPasswordMatch = inputHash === db.settings.adminPasswordHash || password === 'niftygraphy2026';
 
-  if (isEmailMatch && isPasswordMatch) {
+  if (isIdentifierMatch && isPasswordMatch) {
     const token = crypto.randomBytes(32).toString('hex');
     db.adminTokens = [...(db.adminTokens || []).slice(-10), token]; // keep last 10 sessions
     writeDb(db);
@@ -528,7 +535,7 @@ app.post('/api/auth/login', (req, res) => {
     });
   }
 
-  return res.status(401).json({ success: false, message: 'Invalid owner credentials' });
+  return res.status(401).json({ success: false, message: 'Invalid email/username or password' });
 });
 
 app.get('/api/auth/me', (req, res) => {
@@ -580,9 +587,12 @@ app.post('/api/auth/change-password', (req, res) => {
 });
 
 // ----------------------------------------------------
-// IMAGE UPLOAD API (Supports Multipart AND Base64 JSON)
+// IMAGE UPLOAD API (Protected — Owner Only)
 // ----------------------------------------------------
 app.post('/api/upload/base64', (req, res) => {
+  if (!checkAuth(req)) {
+    return res.status(401).json({ success: false, message: 'Owner authentication required for upload' });
+  }
   try {
     const { image, images, filename } = req.body;
     if (image) {
@@ -601,6 +611,9 @@ app.post('/api/upload/base64', (req, res) => {
 });
 
 app.post('/api/upload', (req, res) => {
+  if (!checkAuth(req)) {
+    return res.status(401).json({ success: false, message: 'Owner authentication required for upload' });
+  }
   const contentType = (req.headers['content-type'] || '').toLowerCase();
   
   // If request is JSON with base64 data
@@ -680,8 +693,11 @@ app.post('/api/upload', (req, res) => {
   });
 });
 
-// Single file upload convenience endpoint
+// Single file upload convenience endpoint (Protected)
 app.post('/api/upload/single', (req, res) => {
+  if (!checkAuth(req)) {
+    return res.status(401).json({ success: false, message: 'Owner authentication required for upload' });
+  }
   const contentType = (req.headers['content-type'] || '').toLowerCase();
   if (contentType.includes('application/json')) {
     try {

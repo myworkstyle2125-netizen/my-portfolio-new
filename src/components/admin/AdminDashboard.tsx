@@ -22,7 +22,7 @@ import {
   X,
 } from 'lucide-react';
 import { AdminSettings, Category, InquiryMessage, PackageItem, Project, Testimonial } from '../../types';
-import { APPROVED_CATEGORY_ITEMS, APPROVED_PROJECT_CATEGORIES } from '../../data/siteData';
+import { APPROVED_CATEGORY_ITEMS, APPROVED_PROJECT_CATEGORIES, LOGO_URL } from '../../data/siteData';
 import {
   apiGetCategories,
   apiGetMessages,
@@ -132,15 +132,17 @@ export function AdminDashboard({ onBackToSite, onLogout }: AdminDashboardProps) 
         {/* Brand Header */}
         <div className="p-6 border-b border-border/80 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-accent text-accent-foreground font-display font-bold text-sm shadow-md">
-              NG
-            </div>
+            <img
+              src={LOGO_URL}
+              alt="NIFTYGRAPHY"
+              className="h-10 w-10 rounded-xl object-cover border border-border/80 shadow-md"
+            />
             <div>
-              <h2 className="font-display font-bold text-sm tracking-tight text-foreground">
+              <h2 className="font-display font-bold text-sm tracking-[0.16em] text-foreground">
                 {settings.siteName || 'NIFTYGRAPHY'}
               </h2>
               <p className="text-[0.68rem] text-accent font-medium flex items-center gap-1">
-                <ShieldCheck className="h-3 w-3" /> Owner Admin Portal
+                <ShieldCheck className="h-3 w-3" /> Owner Dashboard
               </p>
             </div>
           </div>

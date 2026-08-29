@@ -13,92 +13,172 @@ import { Contact } from './components/Contact';
 import { Footer } from './components/Footer';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 import { AdminLogin } from './components/admin/AdminLogin';
-import { apiCheckAuth } from './lib/api';
+import { apiCheckAuth, apiLogout } from './lib/api';
+
+type RouteState = 'public' | 'login' | 'admin';
 
 export default function App() {
-  const [isAdminRoute, setIsAdminRoute] = useState(false);
+  const [currentRoute, setCurrentRoute] = useState<RouteState>('public');
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [authChecking, setAuthChecking] = useState(true);
 
-  // Check URL path or hash for #admin or /admin
-  const checkRoute = () => {
-    const isHashAdmin = window.location.hash.startsWith('#admin') || window.location.hash.startsWith('#/admin');
-    const isPathAdmin = window.location.pathname.startsWith('/admin');
-    setIsAdminRoute(isHashAdmin || isPathAdmin);
+  // Check initial authentication once on mount
+  const checkInitialAuth = async () => {
+    try {
+      const isAuth = await apiCheckAuth();
+      setIsAuthenticated(isAuth);
+      return isAuth;
+    } catch {
+      setIsAuthenticated(false);
+      return false;
+    } finally {
+      setAuthChecking(false);
+    }
+  };
+
+  // Determine current active route based on window.location
+  const resolveRoute = (authStatus: boolean | null) => {
+    const path = window.location.pathname.toLowerCase();
+    const hash = window.location.hash.toLowerCase();
+
+    const isLoginPath =
+      path === '/owner-login' ||
+      path === '/owner-login/' ||
+      hash === '#owner-login' ||
+      hash === '#/owner-login';
+
+    const isAdminPath =
+      path === '/admin' ||
+      path === '/admin/' ||
+      hash === '#admin' ||
+      hash === '#/admin' ||
+      hash === '#dashboard' ||
+      hash === '#/dashboard';
+
+    if (isAdminPath) {
+      if (authStatus === false) {
+        // Unauthenticated visitor trying to access /admin -> redirect to /owner-login
+        if (hash) {
+          window.location.hash = '#/owner-login';
+        } else {
+          window.history.replaceState({}, '', '/owner-login');
+        }
+        setCurrentRoute('login');
+      } else {
+        setCurrentRoute('admin');
+      }
+    } else if (isLoginPath) {
+      if (authStatus === true) {
+        // Already authenticated owner visiting /owner-login -> redirect to /admin
+        if (hash) {
+          window.location.hash = '#/admin';
+        } else {
+          window.history.replaceState({}, '', '/admin');
+        }
+        setCurrentRoute('admin');
+      } else {
+        setCurrentRoute('login');
+      }
+    } else {
+      setCurrentRoute('public');
+    }
   };
 
   useEffect(() => {
-    checkRoute();
-    window.addEventListener('hashchange', checkRoute);
-    window.addEventListener('popstate', checkRoute);
+    checkInitialAuth().then((authStatus) => {
+      resolveRoute(authStatus);
+    });
 
-    // Keyboard shortcut for owner: Alt + A
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.altKey && (e.key === 'a' || e.key === 'A')) {
-        e.preventDefault();
-        window.location.hash = '#admin';
-      }
+    const handleLocationChange = async () => {
+      // If user navigates to admin or login, verify auth status
+      const authStatus = await apiCheckAuth().catch(() => false);
+      setIsAuthenticated(authStatus);
+      resolveRoute(authStatus);
     };
-    window.addEventListener('keydown', handleKeyDown);
+
+    window.addEventListener('hashchange', handleLocationChange);
+    window.addEventListener('popstate', handleLocationChange);
 
     return () => {
-      window.removeEventListener('hashchange', checkRoute);
-      window.removeEventListener('popstate', checkRoute);
-      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('hashchange', handleLocationChange);
+      window.removeEventListener('popstate', handleLocationChange);
     };
   }, []);
 
-  // Verify auth if admin route is active
-  useEffect(() => {
-    if (isAdminRoute) {
-      apiCheckAuth()
-        .then((auth) => setIsAuthenticated(auth))
-        .catch(() => setIsAuthenticated(false));
+  const handleLoginSuccess = () => {
+    setIsAuthenticated(true);
+    setCurrentRoute('admin');
+    if (window.location.hash) {
+      window.location.hash = '#/admin';
+    } else {
+      window.history.pushState({}, '', '/admin');
     }
-  }, [isAdminRoute]);
+  };
 
-  const handleOpenAdmin = () => {
-    window.location.hash = '#admin';
+  const handleLogout = async () => {
+    try {
+      await apiLogout();
+    } catch {}
+    setIsAuthenticated(false);
+    setCurrentRoute('login');
+    if (window.location.hash) {
+      window.location.hash = '#/owner-login';
+    } else {
+      window.history.pushState({}, '', '/owner-login');
+    }
   };
 
   const handleBackToSite = () => {
-    window.location.hash = '';
-    if (window.location.pathname.startsWith('/admin')) {
+    if (window.location.hash) {
+      window.location.hash = '';
+    }
+    if (window.location.pathname.startsWith('/admin') || window.location.pathname.startsWith('/owner-login')) {
       window.history.pushState({}, '', '/');
     }
-    setIsAdminRoute(false);
+    setCurrentRoute('public');
   };
 
-  // If in admin mode
-  if (isAdminRoute) {
-    if (isAuthenticated === null) {
-      return (
-        <div className="min-h-screen bg-background flex items-center justify-center">
-          <div className="flex flex-col items-center gap-3">
-            <div className="h-8 w-8 rounded-full border-2 border-accent border-t-transparent animate-spin" />
-            <p className="text-xs text-muted-foreground">Checking authentication…</p>
-          </div>
+  // If loading authentication state on admin/login route
+  if (authChecking && currentRoute !== 'public') {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-8 w-8 rounded-full border-2 border-accent border-t-transparent animate-spin" />
+          <p className="text-xs text-muted-foreground">Verifying access…</p>
         </div>
-      );
-    }
+      </div>
+    );
+  }
 
-    if (isAuthenticated) {
+  // 1. OWNER ADMIN DASHBOARD (Protected)
+  if (currentRoute === 'admin') {
+    if (!isAuthenticated) {
       return (
-        <AdminDashboard
+        <AdminLogin
+          onSuccess={handleLoginSuccess}
           onBackToSite={handleBackToSite}
-          onLogout={() => setIsAuthenticated(false)}
         />
       );
     }
+    return (
+      <AdminDashboard
+        onBackToSite={handleBackToSite}
+        onLogout={handleLogout}
+      />
+    );
+  }
 
+  // 2. OWNER LOGIN ROUTE (/owner-login)
+  if (currentRoute === 'login') {
     return (
       <AdminLogin
-        onSuccess={() => setIsAuthenticated(true)}
+        onSuccess={handleLoginSuccess}
         onBackToSite={handleBackToSite}
       />
     );
   }
 
-  // Public Portfolio Website
+  // 3. PUBLIC WEBSITE (Normal Visitors)
   return (
     <div className="relative min-h-screen bg-background text-foreground selection:bg-accent selection:text-accent-foreground font-sans">
       <Navbar />
@@ -114,7 +194,7 @@ export default function App() {
         <CtaBanner />
         <Contact />
       </main>
-      <Footer onOpenAdmin={handleOpenAdmin} />
+      <Footer />
     </div>
   );
 }

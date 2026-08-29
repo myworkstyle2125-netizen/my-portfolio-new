@@ -1,5 +1,5 @@
-import React, { useRef, useState } from 'react';
-import { Check, Image as ImageIcon, Loader2, Trash2, UploadCloud, X } from 'lucide-react';
+import React, { useRef, useState, useEffect } from 'react';
+import { Check, Image as ImageIcon, Loader2, RefreshCw, Trash2, UploadCloud, Link as LinkIcon } from 'lucide-react';
 import { apiUploadFiles, apiUploadSingle } from '../../lib/api';
 
 interface SingleImageUploaderProps {
@@ -21,24 +21,48 @@ export function SingleImageUploader({
 }: SingleImageUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [localPreview, setLocalPreview] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showUrlInput, setShowUrlInput] = useState(false);
+  const [manualUrl, setManualUrl] = useState('');
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Keep localPreview in sync or null when value changes from outside
+  useEffect(() => {
+    if (!value) {
+      setLocalPreview(null);
+    }
+  }, [value]);
 
   const handleFile = async (file: File) => {
     if (!file.type.startsWith('image/')) {
-      setError('Please choose a valid image file (JPG, PNG, WEBP).');
+      setError('Please choose a valid image file (JPG, PNG, WEBP, SVG).');
       return;
     }
+
     setError(null);
     setUploading(true);
+
+    // Instant local preview
+    const preview = URL.createObjectURL(file);
+    setLocalPreview(preview);
+
     try {
-      const url = await apiUploadSingle(file);
-      onChange(url);
+      const serverUrl = await apiUploadSingle(file);
+      onChange(serverUrl);
+      setLocalPreview(null);
     } catch (err: any) {
-      console.error(err);
+      console.error('Single image upload failed:', err);
       setError(err.message || 'Image upload failed. Please try again.');
+      // Revert preview if no persistent value exists
+      if (!value) {
+        setLocalPreview(null);
+      }
     } finally {
       setUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -50,50 +74,117 @@ export function SingleImageUploader({
     }
   };
 
+  const handleManualUrlSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (manualUrl.trim()) {
+      onChange(manualUrl.trim());
+      setShowUrlInput(false);
+      setManualUrl('');
+      setError(null);
+    }
+  };
+
+  const displayImage = localPreview || value;
+
   return (
     <div className="grid gap-2">
       <div className="flex items-center justify-between">
         <label className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
           {label} {required && <span className="text-destructive">*</span>}
         </label>
-        {value && (
-          <button
-            type="button"
-            onClick={() => onChange('')}
-            className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-destructive"
-          >
-            <Trash2 className="h-3 w-3" /> Remove
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          {!showUrlInput && (
+            <button
+              type="button"
+              onClick={() => setShowUrlInput(true)}
+              className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <LinkIcon className="h-3 w-3" /> Paste URL
+            </button>
+          )}
+          {displayImage && (
+            <button
+              type="button"
+              onClick={() => {
+                onChange('');
+                setLocalPreview(null);
+              }}
+              className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-destructive"
+            >
+              <Trash2 className="h-3 w-3" /> Remove
+            </button>
+          )}
+        </div>
       </div>
 
       {description && <p className="text-xs text-muted-foreground">{description}</p>}
 
-      {value ? (
+      {showUrlInput && (
+        <form onSubmit={handleManualUrlSubmit} className="flex items-center gap-2">
+          <input
+            type="url"
+            placeholder="https://images.unsplash.com/... or /uploads/..."
+            value={manualUrl}
+            onChange={(e) => setManualUrl(e.target.value)}
+            className="flex-1 rounded-xl border border-border bg-surface px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:border-accent focus:outline-hidden"
+          />
+          <button
+            type="submit"
+            className="rounded-xl bg-accent px-3 py-1.5 text-xs font-medium text-accent-foreground hover:opacity-90 transition-opacity"
+          >
+            Apply
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setShowUrlInput(false);
+              setManualUrl('');
+            }}
+            className="text-xs text-muted-foreground hover:text-foreground"
+          >
+            Cancel
+          </button>
+        </form>
+      )}
+
+      {displayImage ? (
         <div className="relative group overflow-hidden rounded-2xl border border-border bg-surface/50">
           <img
-            src={value}
+            src={displayImage}
             alt={label}
             className={`w-full object-cover transition-transform duration-300 group-hover:scale-102 ${
               aspect === 'video' ? 'aspect-[16/10]' : aspect === 'square' ? 'aspect-square' : 'max-h-80'
             }`}
           />
-          <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 backdrop-blur-xs">
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="rounded-full bg-foreground px-4 py-2 text-xs font-medium text-background transition-transform hover:scale-105"
-            >
-              Replace Image
-            </button>
-            <button
-              type="button"
-              onClick={() => onChange('')}
-              className="rounded-full bg-destructive/90 px-4 py-2 text-xs font-medium text-white transition-transform hover:scale-105"
-            >
-              Remove
-            </button>
-          </div>
+
+          {uploading && (
+            <div className="absolute inset-0 bg-background/80 flex flex-col items-center justify-center gap-2 backdrop-blur-xs">
+              <Loader2 className="h-7 w-7 animate-spin text-accent" />
+              <p className="text-xs font-medium text-foreground">Saving image to persistent storage…</p>
+            </div>
+          )}
+
+          {!uploading && (
+            <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3 backdrop-blur-xs">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="inline-flex items-center gap-1.5 rounded-full bg-foreground px-4 py-2 text-xs font-medium text-background transition-transform hover:scale-105"
+              >
+                <RefreshCw className="h-3.5 w-3.5" /> Replace Image
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  onChange('');
+                  setLocalPreview(null);
+                }}
+                className="inline-flex items-center gap-1.5 rounded-full bg-destructive/90 px-4 py-2 text-xs font-medium text-white transition-transform hover:scale-105"
+              >
+                <Trash2 className="h-3.5 w-3.5" /> Remove
+              </button>
+            </div>
+          )}
         </div>
       ) : (
         <div
@@ -123,7 +214,7 @@ export function SingleImageUploader({
               <p className="text-sm font-medium text-foreground">
                 Click to browse or drag & drop design file
               </p>
-              <p className="text-xs text-muted-foreground">JPG, PNG, WEBP up to 25MB (Preserves full quality)</p>
+              <p className="text-xs text-muted-foreground">JPG, PNG, WEBP up to 30MB (Preserves full original quality)</p>
             </div>
           )}
         </div>
@@ -170,7 +261,7 @@ export function GalleryUploader({
   const handleFiles = async (files: FileList | File[]) => {
     const validFiles = Array.from(files).filter((f) => f.type.startsWith('image/'));
     if (!validFiles.length) {
-      setError('Please select valid image files.');
+      setError('Please select valid image files (JPG, PNG, WEBP).');
       return;
     }
     setError(null);
@@ -179,10 +270,13 @@ export function GalleryUploader({
       const urls = await apiUploadFiles(validFiles);
       onChange([...images, ...urls]);
     } catch (err: any) {
-      console.error(err);
+      console.error('Gallery upload error:', err);
       setError(err.message || 'Gallery upload failed.');
     } finally {
       setUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 

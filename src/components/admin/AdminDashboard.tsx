@@ -22,6 +22,7 @@ import {
   X,
 } from 'lucide-react';
 import { AdminSettings, Category, InquiryMessage, PackageItem, Project, Testimonial } from '../../types';
+import { APPROVED_CATEGORY_ITEMS, APPROVED_PROJECT_CATEGORIES } from '../../data/siteData';
 import {
   apiGetCategories,
   apiGetMessages,
@@ -51,7 +52,7 @@ export function AdminDashboard({ onBackToSite, onLogout }: AdminDashboardProps) 
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [projects, setProjects] = useState<Project[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<Category[]>(APPROVED_CATEGORY_ITEMS as Category[]);
   const [messages, setMessages] = useState<InquiryMessage[]>([]);
   const [packages, setPackages] = useState<PackageItem[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
@@ -74,15 +75,19 @@ export function AdminDashboard({ onBackToSite, onLogout }: AdminDashboardProps) 
       setLoading(true);
       const [p, c, m, pk, t, s] = await Promise.all([
         apiGetProjects(false).catch(() => []),
-        apiGetCategories().catch(() => []),
+        apiGetCategories().catch(() => APPROVED_CATEGORY_ITEMS as Category[]),
         apiGetMessages().catch(() => []),
         apiGetPackages().catch(() => []),
         apiGetTestimonials(true).catch(() => []),
         apiGetSettings().catch(() => ({})),
       ]);
 
+      const approvedCategories = (c || []).filter((item: Category) =>
+        APPROVED_PROJECT_CATEGORIES.includes(item.name as any)
+      );
+
       setProjects(p);
-      setCategories(c);
+      setCategories(approvedCategories.length === 6 ? approvedCategories : (APPROVED_CATEGORY_ITEMS as Category[]));
       setMessages(m);
       setPackages(pk);
       setTestimonials(t);
@@ -135,7 +140,7 @@ export function AdminDashboard({ onBackToSite, onLogout }: AdminDashboardProps) 
                 {settings.siteName || 'NIFTYGRAPHY'}
               </h2>
               <p className="text-[0.68rem] text-accent font-medium flex items-center gap-1">
-                <ShieldCheck className="h-3 w-3" /> Owner Admin CMS
+                <ShieldCheck className="h-3 w-3" /> Owner Admin Portal
               </p>
             </div>
           </div>

@@ -99,8 +99,13 @@ export function Portfolio() {
     apiGetCategories()
       .then((data: Category[]) => {
         if (Array.isArray(data) && data.length > 0) {
-          const names = ['All', ...data.filter((c) => c.published !== false).map((c) => c.name)];
-          setCategories(Array.from(new Set(names)));
+          const dynamicApproved = data
+            .filter((c) => c.published !== false && INITIAL_CATEGORIES.includes(c.name))
+            .map((c) => c.name);
+          const list = INITIAL_CATEGORIES.filter(
+            (c) => c === 'All' || dynamicApproved.includes(c) || INITIAL_CATEGORIES.includes(c)
+          );
+          setCategories(list.length > 0 ? list : INITIAL_CATEGORIES);
         }
       })
       .catch((err) => console.log('Using static categories cache:', err));
@@ -141,6 +146,11 @@ export function Portfolio() {
     return list.slice(0, 6);
   }, [projects]);
 
+  // Additional projects beyond the 6 featured cards (for future added works)
+  const additionalProjects = useMemo(() => {
+    return projects.filter((p) => !featuredProjects.some((fp) => fp.slug === p.slug || (p.id && fp.id === p.id)));
+  }, [projects, featuredProjects]);
+
   // The 6 featured items assigned to specific asymmetric positions:
   const p1 = featuredProjects[0]; // JCK Crypto Exchange (Left - Medium)
   const p2 = featuredProjects[1]; // Nifty Academy Platform (Center - Large/Tall)
@@ -150,7 +160,7 @@ export function Portfolio() {
   const p6 = featuredProjects[5]; // Social Media Design Collection (Left - Medium)
 
   // Navigation handlers for modal
-  const currentList = activeCategory === 'All' ? featuredProjects : filteredProjects;
+  const currentList = activeCategory === 'All' ? [...featuredProjects, ...additionalProjects] : filteredProjects;
   const currentIndex = selectedProject
     ? currentList.findIndex((p) => (p.id && p.id === selectedProject.id) || p.slug === selectedProject.slug)
     : -1;
@@ -340,6 +350,29 @@ export function Portfolio() {
               />
             ))}
           </div>
+
+          {/* ADDITIONAL PUBLISHED PROJECTS (Appears if user adds more projects) */}
+          {additionalProjects.length > 0 && (
+            <div className="mt-14 pt-10 border-t border-border/60">
+              <div className="mb-8">
+                <h3 className="font-display text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+                  More <span className="text-gradient">Design Projects</span>
+                </h3>
+              </div>
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 sm:gap-7">
+                {additionalProjects.map((project, idx) => (
+                  <Reveal key={project.id || project.slug || idx} delay={(idx % 3) * 80}>
+                    <ProjectCard
+                      project={project}
+                      onClick={() => setSelectedProject(project)}
+                      isLarge={project.shape === 'tall'}
+                      className={project.shape === 'tall' ? 'min-h-[480px]' : 'min-h-[360px]'}
+                    />
+                  </Reveal>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       ) : (
         /* =========================================================================

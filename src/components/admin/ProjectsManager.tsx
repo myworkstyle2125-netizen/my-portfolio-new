@@ -14,6 +14,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { Category, Project } from '../../types';
+import { APPROVED_PROJECT_CATEGORIES } from '../../data/siteData';
 import {
   apiDeleteProject,
   apiDuplicateProject,
@@ -76,9 +77,9 @@ export function ProjectsManager({
     try {
       const newStatus = !(p.published !== false);
       await apiTogglePublish(p.id || p.slug, newStatus);
-      setFeedback(`Project "${p.title}" is now ${newStatus ? 'Published' : 'Draft'}.`);
+      setFeedback(newStatus ? 'Project published successfully.' : `Project "${p.title}" unpublished (saved as Draft).`);
       onRefresh();
-      setTimeout(() => setFeedback(null), 3000);
+      setTimeout(() => setFeedback(null), 3500);
     } catch (err: any) {
       alert(err.message || 'Failed to toggle status');
     }
@@ -90,7 +91,7 @@ export function ProjectsManager({
       await apiToggleFeatured(p.id || p.slug, newFeatured);
       setFeedback(`Project "${p.title}" ${newFeatured ? 'marked as Featured' : 'unmarked from Featured'}.`);
       onRefresh();
-      setTimeout(() => setFeedback(null), 3000);
+      setTimeout(() => setFeedback(null), 3500);
     } catch (err: any) {
       alert(err.message || 'Failed to toggle featured');
     }
@@ -101,7 +102,7 @@ export function ProjectsManager({
       await apiDuplicateProject(p.id || p.slug);
       setFeedback(`Duplicated "${p.title}" as a new Draft.`);
       onRefresh();
-      setTimeout(() => setFeedback(null), 3000);
+      setTimeout(() => setFeedback(null), 3500);
     } catch (err: any) {
       alert(err.message || 'Failed to duplicate project');
     }
@@ -112,10 +113,10 @@ export function ProjectsManager({
     setDeleting(true);
     try {
       await apiDeleteProject(projectToDelete.id || projectToDelete.slug);
-      setFeedback(`Deleted project "${projectToDelete.title}".`);
+      setFeedback('Project deleted successfully.');
       setProjectToDelete(null);
       onRefresh();
-      setTimeout(() => setFeedback(null), 3000);
+      setTimeout(() => setFeedback(null), 3500);
     } catch (err: any) {
       alert(err.message || 'Failed to delete project');
     } finally {
@@ -174,9 +175,9 @@ export function ProjectsManager({
             className="rounded-xl border border-input bg-background px-3 py-2 text-xs text-foreground focus:border-accent focus:outline-none"
           >
             <option value="All">All Categories</option>
-            {categories.map((c) => (
-              <option key={c.id || c.name} value={c.name}>
-                {c.name}
+            {APPROVED_PROJECT_CATEGORIES.map((catName) => (
+              <option key={catName} value={catName}>
+                {catName}
               </option>
             ))}
           </select>
@@ -400,10 +401,10 @@ export function ProjectsManager({
           categories={categories}
           onClose={() => setEditingProject(undefined)}
           onRefreshCategories={onRefreshCategories}
-          onSaved={() => {
+          onSaved={(_savedProj, msg) => {
             onRefresh();
-            setFeedback('Project saved successfully!');
-            setTimeout(() => setFeedback(null), 3000);
+            setFeedback(msg || 'Project saved successfully.');
+            setTimeout(() => setFeedback(null), 3500);
           }}
         />
       )}
@@ -420,13 +421,11 @@ export function ProjectsManager({
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-destructive/15">
                 <AlertCircle className="h-5 w-5" />
               </div>
-              <h3 className="text-base font-semibold text-foreground">Delete Project?</h3>
+              <h3 className="text-base font-semibold text-foreground">Are you sure you want to delete this project?</h3>
             </div>
 
             <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
-              Are you sure you want to permanently delete{' '}
-              <strong className="text-foreground">"{projectToDelete.title}"</strong>? This will remove
-              it from your portfolio website.
+              You are about to permanently delete <strong className="text-foreground">"{projectToDelete.title}"</strong>. This will remove it from your project database and live public portfolio.
             </p>
 
             <div className="mt-6 flex items-center justify-end gap-3">

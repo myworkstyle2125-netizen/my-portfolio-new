@@ -1,16 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { Check, Eye, Loader2, Plus, Sparkles, X } from 'lucide-react';
 import { Category, Project } from '../../types';
-import { apiCreateCategory, apiCreateProject, apiUpdateProject } from '../../lib/api';
+import { apiCreateProject, apiUpdateProject } from '../../lib/api';
+import { APPROVED_PROJECT_CATEGORIES } from '../../data/siteData';
 import { GalleryUploader, SingleImageUploader } from './ImageUploader';
 
 interface ProjectEditorModalProps {
   project?: Project | null;
   categories: Category[];
   onClose: () => void;
-  onSaved: (savedProject: Project) => void;
+  onSaved: (savedProject: Project, successMessage?: string) => void;
   onRefreshCategories?: () => void;
 }
+
+const getInitialCategory = (raw?: string) => {
+  if (!raw) return 'Branding';
+  if (raw === 'Advertising') return 'Branding';
+  if (raw === 'Video / Motion' || raw === 'Video' || raw === 'Motion') return 'Thumbnails';
+  return (APPROVED_PROJECT_CATEGORIES as readonly string[]).includes(raw) ? raw : 'Branding';
+};
 
 const COMMON_TOOLS = [
   'Photoshop',
@@ -47,7 +55,7 @@ export function ProjectEditorModal({
 
   const [title, setTitle] = useState(project?.title || '');
   const [slug, setSlug] = useState(project?.slug || '');
-  const [category, setCategory] = useState(project?.category || categories[0]?.name || 'Branding');
+  const [category, setCategory] = useState(getInitialCategory(project?.category));
   const [categoryLabel, setCategoryLabel] = useState(project?.categoryLabel || project?.category || 'Branding');
   const [client, setClient] = useState(project?.client || '');
   const [year, setYear] = useState(project?.year || new Date().getFullYear().toString());
@@ -70,10 +78,6 @@ export function ProjectEditorModal({
   const [featured, setFeatured] = useState(project?.featured ?? false);
   const [published, setPublished] = useState(project?.published ?? true);
   const [displayOrder, setDisplayOrder] = useState(project?.displayOrder ?? 1);
-
-  // Quick add category inline
-  const [showAddCat, setShowAddCat] = useState(false);
-  const [newCatName, setNewCatName] = useState('');
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -129,31 +133,26 @@ export function ProjectEditorModal({
     }
   };
 
-  const handleQuickAddCategory = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newCatName.trim()) return;
-    try {
-      const created = await apiCreateCategory(newCatName.trim());
-      setCategory(created.name);
-      setCategoryLabel(created.name);
-      setNewCatName('');
-      setShowAddCat(false);
-      onRefreshCategories?.();
-    } catch (err: any) {
-      setError(err.message || 'Failed to add category');
-    }
-  };
-
   const handleSave = async (publishStatus?: boolean) => {
     setError(null);
+    const effectivePublished = publishStatus !== undefined ? publishStatus : published;
+
+    // Strict validation: Required fields
+    if (!thumbnail && !hero && gallery.length === 0) {
+      setError('Please upload a project image.');
+      return;
+    }
     if (!title.trim()) {
       setError('Please enter a project title.');
       return;
     }
+    if (!category || !category.trim()) {
+      setError('Please select a category.');
+      return;
+    }
 
-    const effectivePublished = publishStatus !== undefined ? publishStatus : published;
-    const finalThumb = thumbnail || hero || gallery[0] || '/assets/work-jck.jpg';
-    const finalHero = hero || thumbnail || gallery[0] || '/assets/work-jck.jpg';
+    const finalThumb = thumbnail || hero || gallery[0] || '';
+    const finalHero = hero || thumbnail || gallery[0] || '';
     const finalGallery = gallery.length > 0 ? gallery : [finalHero];
 
     setSaving(true);
@@ -185,14 +184,27 @@ export function ProjectEditorModal({
       };
 
       let saved: Project;
+      let message = 'Project saved successfully.';
       if (isEdit && (project?.id || project?.slug)) {
         const idToUpdate = project.id || project.slug;
         saved = await apiUpdateProject(idToUpdate, payload);
+        if (effectivePublished && project.published === false) {
+          message = 'Project published successfully.';
+        } else if (!effectivePublished) {
+          message = 'Draft saved successfully.';
+        } else {
+          message = 'Project updated successfully.';
+        }
       } else {
         saved = await apiCreateProject(payload);
+        if (effectivePublished) {
+          message = 'Project published successfully.';
+        } else {
+          message = 'Draft saved successfully.';
+        }
       }
 
-      onSaved(saved);
+      onSaved(saved, message);
       onClose();
     } catch (err: any) {
       console.error(err);
@@ -258,56 +270,20 @@ export function ProjectEditorModal({
             </div>
 
             <div className="grid gap-1.5">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
-                  Category <span className="text-destructive">*</span>
-                </label>
-                <button
-                  type="button"
-                  onClick={() => setShowAddCat(!showAddCat)}
-                  className="text-xs text-accent hover:underline inline-flex items-center gap-1"
-                >
-                  <Plus className="h-3 w-3" /> New Category
-                </button>
-              </div>
-
-              {showAddCat ? (
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={newCatName}
-                    onChange={(e) => setNewCatName(e.target.value)}
-                    placeholder="New category name"
-                    className="flex-1 rounded-xl border border-input bg-background px-3 py-2 text-xs text-foreground focus:border-accent"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleQuickAddCategory}
-                    className="rounded-xl bg-accent px-3 py-2 text-xs font-medium text-accent-foreground"
-                  >
-                    Add
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowAddCat(false)}
-                    className="rounded-xl border border-border px-3 py-2 text-xs text-muted-foreground"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              ) : (
-                <select
-                  value={category}
-                  onChange={(e) => handleCategoryChange(e.target.value)}
-                  className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none"
-                >
-                  {categories.map((c) => (
-                    <option key={c.id || c.name} value={c.name}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-              )}
+              <label className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+                Category <span className="text-destructive">*</span>
+              </label>
+              <select
+                value={category}
+                onChange={(e) => handleCategoryChange(e.target.value)}
+                className="w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm text-foreground focus:border-accent focus:outline-none cursor-pointer"
+              >
+                {APPROVED_PROJECT_CATEGORIES.map((catName) => (
+                  <option key={catName} value={catName}>
+                    {catName}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className="grid gap-1.5">
@@ -362,7 +338,12 @@ export function ProjectEditorModal({
                 label="Portfolio Card Thumbnail"
                 description="Shown on the main portfolio grid."
                 value={thumbnail}
-                onChange={setThumbnail}
+                onChange={(url) => {
+                  setThumbnail(url);
+                  if (url && !hero) {
+                    setHero(url);
+                  }
+                }}
                 aspect="video"
                 required
               />
@@ -372,7 +353,12 @@ export function ProjectEditorModal({
                 label="Case Study Hero Visual"
                 description="Large header graphic in the project modal view."
                 value={hero}
-                onChange={setHero}
+                onChange={(url) => {
+                  setHero(url);
+                  if (url && !thumbnail) {
+                    setThumbnail(url);
+                  }
+                }}
                 aspect="video"
               />
             </div>

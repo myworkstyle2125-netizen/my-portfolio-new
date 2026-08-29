@@ -10,23 +10,23 @@ const PORT = 3000;
 
 // Ensure directories exist
 const DATA_DIR = path.join(process.cwd(), 'data');
-const UPLOAD_DIR = path.join(process.cwd(), 'public', 'uploads');
+const DATA_UPLOAD_DIR = path.join(process.cwd(), 'data', 'uploads');
+const PUBLIC_UPLOAD_DIR = path.join(process.cwd(), 'public', 'uploads');
 
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-}
-if (!fs.existsSync(UPLOAD_DIR)) {
-  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-}
+[DATA_DIR, DATA_UPLOAD_DIR, PUBLIC_UPLOAD_DIR].forEach((dir) => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+});
 
 // Multer setup for direct file upload from owner's computer
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => {
-    cb(null, UPLOAD_DIR);
+    cb(null, DATA_UPLOAD_DIR);
   },
   filename: (_req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase() || '.jpg';
-    const cleanName = path.basename(file.originalname, ext).replace(/[^a-zA-Z0-9_-]/g, '-').toLowerCase();
+    const cleanName = path.basename(file.originalname, ext).replace(/[^a-zA-Z0-9_-]/g, '-').toLowerCase() || 'design';
     const unique = `${Date.now()}-${crypto.randomBytes(4).toString('hex')}`;
     cb(null, `${cleanName}-${unique}${ext}`);
   },
@@ -44,8 +44,39 @@ const fileFilter: multer.Options['fileFilter'] = (_req, file, cb) => {
 const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 25 * 1024 * 1024 }, // 25MB max per image
+  limits: { fileSize: 30 * 1024 * 1024 }, // 30MB max per image
 });
+
+function saveBase64Image(dataUrlOrBase64: string, originalName = 'upload.jpg'): string {
+  let base64Data = dataUrlOrBase64;
+  let ext = '.jpg';
+
+  const matches = dataUrlOrBase64.match(/^data:image\/([a-zA-Z0-9+.-]+);base64,(.+)$/);
+  if (matches) {
+    let type = matches[1].toLowerCase();
+    if (type === 'jpeg') type = 'jpg';
+    if (type === 'svg+xml') type = 'svg';
+    ext = `.${type}`;
+    base64Data = matches[2];
+  } else {
+    const extMatch = path.extname(originalName).toLowerCase();
+    if (extMatch) ext = extMatch;
+  }
+
+  const cleanName = path.basename(originalName, path.extname(originalName)).replace(/[^a-zA-Z0-9_-]/g, '-').toLowerCase() || 'design';
+  const filename = `${cleanName}-${Date.now()}-${crypto.randomBytes(4).toString('hex')}${ext}`;
+  const buffer = Buffer.from(base64Data, 'base64');
+
+  const dataPath = path.join(DATA_UPLOAD_DIR, filename);
+  const publicPath = path.join(PUBLIC_UPLOAD_DIR, filename);
+
+  fs.writeFileSync(dataPath, buffer);
+  try {
+    fs.writeFileSync(publicPath, buffer);
+  } catch {}
+
+  return `/uploads/${filename}`;
+}
 
 // Database initialization
 const DB_FILE = path.join(DATA_DIR, 'db.json');
@@ -215,6 +246,15 @@ const INITIAL_PROJECTS = [
   },
 ];
 
+const APPROVED_CATEGORY_NAMES = [
+  'Branding',
+  'Social Media',
+  'Thumbnails',
+  'T Shirt',
+  'UI/UX',
+  'Print Design',
+];
+
 const INITIAL_CATEGORIES = [
   { id: 'cat-1', name: 'Branding', slug: 'branding', description: 'Logo design, brand identity, and complete visual systems', displayOrder: 1, published: true },
   { id: 'cat-2', name: 'Social Media', slug: 'social-media', description: 'Carousels, posts, banners, and feed templates', displayOrder: 2, published: true },
@@ -222,8 +262,6 @@ const INITIAL_CATEGORIES = [
   { id: 'cat-4', name: 'T Shirt', slug: 't-shirt', description: 'Apparel graphic design, merchandise, and vector artwork', displayOrder: 4, published: true },
   { id: 'cat-5', name: 'UI/UX', slug: 'ui-ux', description: 'Web design, mobile interfaces, and digital experiences', displayOrder: 5, published: true },
   { id: 'cat-6', name: 'Print Design', slug: 'print-design', description: 'Posters, flyers, business cards, and stationery', displayOrder: 6, published: true },
-  { id: 'cat-7', name: 'Advertising', slug: 'advertising', description: 'Marketing creatives, display banners, and promotional campaigns', displayOrder: 7, published: true },
-  { id: 'cat-8', name: 'Video / Motion', slug: 'video-motion', description: 'Motion graphics, reels, and video editing', displayOrder: 8, published: true },
 ];
 
 const INITIAL_PACKAGES = [
@@ -341,13 +379,44 @@ interface DbSchema {
   adminTokens: string[];
 }
 
+function cleanCategory(raw?: string): string {
+  if (!raw) return 'Branding';
+  if (raw === 'Advertising') return 'Branding';
+  if (raw === 'Video / Motion' || raw === 'Video' || raw === 'Motion') return 'Thumbnails';
+  return (APPROVED_CATEGORY_NAMES as readonly string[]).includes(raw) ? raw : 'Branding';
+}
+
+function sanitizeProjects(projects: any[]) {
+  if (!Array.isArray(projects)) return INITIAL_PROJECTS;
+  return projects.map((p) => {
+    return { ...p, category: cleanCategory(p.category) };
+  });
+}
+
+function sanitizeCategories(categories: any[]) {
+  return APPROVED_CATEGORY_NAMES.map((name, index) => {
+    const existing = Array.isArray(categories)
+      ? categories.find((c) => c && c.name && c.name.toLowerCase() === name.toLowerCase())
+      : null;
+    const initial = INITIAL_CATEGORIES.find((c) => c.name === name);
+    return {
+      id: existing?.id || initial?.id || `cat-${index + 1}`,
+      name,
+      slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+      description: existing?.description || initial?.description || '',
+      displayOrder: index + 1,
+      published: true,
+    };
+  });
+}
+
 function readDb(): DbSchema {
   try {
     if (fs.existsSync(DB_FILE)) {
       const data = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
       return {
-        projects: data.projects || INITIAL_PROJECTS,
-        categories: data.categories || INITIAL_CATEGORIES,
+        projects: sanitizeProjects(data.projects || INITIAL_PROJECTS),
+        categories: sanitizeCategories(data.categories || INITIAL_CATEGORIES),
         packages: data.packages || INITIAL_PACKAGES,
         testimonials: data.testimonials && data.testimonials.length > 0 ? data.testimonials : INITIAL_TESTIMONIALS,
         messages: data.messages || [],
@@ -384,12 +453,44 @@ function writeDb(db: DbSchema) {
 readDb();
 
 // Middlewares
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization, x-admin-token');
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
+});
+
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Serve uploaded images statically
-app.use('/uploads', express.static(UPLOAD_DIR));
+// Serve uploaded images statically with fallback and proper content-type
+app.use('/uploads', express.static(DATA_UPLOAD_DIR));
+app.use('/uploads', express.static(PUBLIC_UPLOAD_DIR));
 app.use('/assets', express.static(path.join(process.cwd(), 'public', 'assets')));
+
+// Direct file serving route for uploads ensuring reliable image retrieval
+app.get('/uploads/:filename', (req, res) => {
+  const { filename } = req.params;
+  const safeFilename = path.basename(filename);
+  const dataPath = path.join(DATA_UPLOAD_DIR, safeFilename);
+  const publicPath = path.join(PUBLIC_UPLOAD_DIR, safeFilename);
+
+  if (fs.existsSync(dataPath)) {
+    return res.sendFile(dataPath);
+  }
+  if (fs.existsSync(publicPath)) {
+    return res.sendFile(publicPath);
+  }
+  return res.status(404).send('Image not found');
+});
+
+// Health check endpoint
+app.get('/api/health', (_req, res) => {
+  res.json({ status: 'ok', uptime: process.uptime(), timestamp: new Date().toISOString() });
+});
 
 // Helper for auth validation
 function checkAuth(req: express.Request): boolean {
@@ -479,62 +580,143 @@ app.post('/api/auth/change-password', (req, res) => {
 });
 
 // ----------------------------------------------------
-// IMAGE UPLOAD API (Multipart from computer)
+// IMAGE UPLOAD API (Supports Multipart AND Base64 JSON)
 // ----------------------------------------------------
-app.post('/api/upload', upload.array('files', 12), (req, res) => {
+app.post('/api/upload/base64', (req, res) => {
   try {
-    const files = req.files as Express.Multer.File[];
-    if (!files || files.length === 0) {
-      // Check if single file uploaded as 'file'
-      const singleFile = (req as any).file as Express.Multer.File;
-      if (singleFile) {
-        return res.json({
-          success: true,
-          url: `/uploads/${singleFile.filename}`,
-          filename: singleFile.filename,
-          originalName: singleFile.originalname,
-          size: singleFile.size,
-        });
-      }
-      return res.status(400).json({ success: false, message: 'No file uploaded' });
+    const { image, images, filename } = req.body;
+    if (image) {
+      const url = saveBase64Image(image, filename || 'upload.jpg');
+      return res.json({ success: true, url, urls: [url] });
     }
-
-    const uploadedUrls = files.map((f) => `/uploads/${f.filename}`);
-    return res.json({
-      success: true,
-      urls: uploadedUrls,
-      url: uploadedUrls[0],
-      files: files.map((f) => ({
-        url: `/uploads/${f.filename}`,
-        filename: f.filename,
-        originalName: f.originalname,
-        size: f.size,
-      })),
-    });
+    if (Array.isArray(images) && images.length > 0) {
+      const urls = images.map((img: string, i: number) => saveBase64Image(img, `upload-${i + 1}.jpg`));
+      return res.json({ success: true, url: urls[0], urls });
+    }
+    return res.status(400).json({ success: false, message: 'No image data provided' });
   } catch (err: any) {
-    console.error('Upload error:', err);
-    return res.status(500).json({ success: false, message: err.message || 'File upload failed' });
+    console.error('Base64 upload error:', err);
+    return res.status(500).json({ success: false, message: err.message || 'Image processing failed' });
   }
 });
 
-// Single file upload convenience endpoint
-app.post('/api/upload/single', upload.single('file'), (req, res) => {
-  try {
-    const file = req.file;
-    if (!file) {
-      return res.status(400).json({ success: false, message: 'No file uploaded' });
+app.post('/api/upload', (req, res) => {
+  const contentType = (req.headers['content-type'] || '').toLowerCase();
+  
+  // If request is JSON with base64 data
+  if (contentType.includes('application/json')) {
+    try {
+      const { image, images, files, filename } = req.body;
+      if (image) {
+        const url = saveBase64Image(image, filename || 'upload.jpg');
+        return res.json({ success: true, url, urls: [url] });
+      }
+      if (Array.isArray(images) && images.length > 0) {
+        const urls = images.map((img: string, i: number) => saveBase64Image(img, `upload-${i + 1}.jpg`));
+        return res.json({ success: true, url: urls[0], urls });
+      }
+      if (Array.isArray(files) && files.length > 0) {
+        const urls = files.map((f: any, i: number) =>
+          typeof f === 'string' ? saveBase64Image(f, `upload-${i + 1}.jpg`) : saveBase64Image(f.data || f.image || f.url, f.name || `upload-${i + 1}.jpg`)
+        );
+        return res.json({ success: true, url: urls[0], urls });
+      }
+      return res.status(400).json({ success: false, message: 'No image payload found in JSON body' });
+    } catch (err: any) {
+      console.error('Upload JSON error:', err);
+      return res.status(500).json({ success: false, message: err.message || 'Upload failed' });
     }
-    return res.json({
-      success: true,
-      url: `/uploads/${file.filename}`,
-      filename: file.filename,
-      originalName: file.originalname,
-      size: file.size,
-    });
-  } catch (err: any) {
-    console.error('Upload single error:', err);
-    return res.status(500).json({ success: false, message: err.message || 'File upload failed' });
   }
+
+  // Handle multipart form data
+  upload.array('files', 12)(req, res, (err) => {
+    if (err) {
+      console.error('Multer upload error:', err);
+      return res.status(400).json({ success: false, message: err.message || 'File upload failed' });
+    }
+
+    try {
+      const files = req.files as Express.Multer.File[];
+      if (!files || files.length === 0) {
+        const singleFile = (req as any).file as Express.Multer.File;
+        if (singleFile) {
+          try {
+            fs.copyFileSync(path.join(DATA_UPLOAD_DIR, singleFile.filename), path.join(PUBLIC_UPLOAD_DIR, singleFile.filename));
+          } catch {}
+          return res.json({
+            success: true,
+            url: `/uploads/${singleFile.filename}`,
+            urls: [`/uploads/${singleFile.filename}`],
+            filename: singleFile.filename,
+            originalName: singleFile.originalname,
+            size: singleFile.size,
+          });
+        }
+        return res.status(400).json({ success: false, message: 'No file uploaded' });
+      }
+
+      files.forEach((f) => {
+        try {
+          fs.copyFileSync(path.join(DATA_UPLOAD_DIR, f.filename), path.join(PUBLIC_UPLOAD_DIR, f.filename));
+        } catch {}
+      });
+
+      const uploadedUrls = files.map((f) => `/uploads/${f.filename}`);
+      return res.json({
+        success: true,
+        urls: uploadedUrls,
+        url: uploadedUrls[0],
+        files: files.map((f) => ({
+          url: `/uploads/${f.filename}`,
+          filename: f.filename,
+          originalName: f.originalname,
+          size: f.size,
+        })),
+      });
+    } catch (uploadErr: any) {
+      console.error('Upload processing error:', uploadErr);
+      return res.status(500).json({ success: false, message: uploadErr.message || 'File upload failed' });
+    }
+  });
+});
+
+// Single file upload convenience endpoint
+app.post('/api/upload/single', (req, res) => {
+  const contentType = (req.headers['content-type'] || '').toLowerCase();
+  if (contentType.includes('application/json')) {
+    try {
+      const { image, filename } = req.body;
+      if (!image) return res.status(400).json({ success: false, message: 'No image data provided' });
+      const url = saveBase64Image(image, filename || 'upload.jpg');
+      return res.json({ success: true, url, filename: path.basename(url) });
+    } catch (err: any) {
+      return res.status(500).json({ success: false, message: err.message || 'Upload failed' });
+    }
+  }
+
+  upload.single('file')(req, res, (err) => {
+    if (err) {
+      return res.status(400).json({ success: false, message: err.message || 'File upload failed' });
+    }
+    try {
+      const file = req.file;
+      if (!file) {
+        return res.status(400).json({ success: false, message: 'No file uploaded' });
+      }
+      try {
+        fs.copyFileSync(path.join(DATA_UPLOAD_DIR, file.filename), path.join(PUBLIC_UPLOAD_DIR, file.filename));
+      } catch {}
+      return res.json({
+        success: true,
+        url: `/uploads/${file.filename}`,
+        filename: file.filename,
+        originalName: file.originalname,
+        size: file.size,
+      });
+    } catch (singleErr: any) {
+      return res.status(500).json({ success: false, message: singleErr.message || 'File upload failed' });
+    }
+  });
 });
 
 // ----------------------------------------------------
@@ -599,8 +781,8 @@ app.post('/api/projects', (req, res) => {
     id: `proj-${Date.now()}-${crypto.randomBytes(3).toString('hex')}`,
     slug,
     title,
-    category: body.category || 'Branding',
-    categoryLabel: body.categoryLabel || body.category || 'Branding',
+    category: cleanCategory(body.category),
+    categoryLabel: body.categoryLabel || cleanCategory(body.category),
     client: body.client || 'Client',
     year: body.year || new Date().getFullYear().toString(),
     shortDescription: body.shortDescription || body.description || '',
@@ -649,6 +831,7 @@ app.put('/api/projects/:id', (req, res) => {
   const updatedProject = {
     ...existing,
     ...body,
+    category: body.category ? cleanCategory(body.category) : cleanCategory(existing.category),
     id: existing.id,
     slug: body.slug ? body.slug.trim() : existing.slug,
     tools: Array.isArray(body.tools) ? body.tools : (typeof body.tools === 'string' ? body.tools.split(',').map((t: string) => t.trim()).filter(Boolean) : existing.tools),

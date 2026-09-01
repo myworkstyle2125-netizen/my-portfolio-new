@@ -157,7 +157,7 @@ const INITIAL_PROJECTS = [
     id: 'proj-3',
     slug: 'creative-brand-identity',
     title: 'Creative Brand Identity',
-    category: 'Branding',
+    category: 'Print Design',
     categoryLabel: 'Branding',
     client: 'Studio Client',
     year: '2024',

@@ -146,7 +146,7 @@ export const PORTFOLIO_PROJECTS: Project[] = [
   {
     slug: 'creative-brand-identity',
     title: 'Creative Brand Identity',
-    category: 'Branding',
+    category: 'Print Design',
     categoryLabel: 'Branding',
     client: 'Studio Noir',
     year: '2024',

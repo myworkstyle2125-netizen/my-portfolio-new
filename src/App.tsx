@@ -13,12 +13,20 @@ import { Contact } from './components/Contact';
 import { Footer } from './components/Footer';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 import { AdminLogin } from './components/admin/AdminLogin';
+import { CategoryPage } from './components/CategoryPage';
+import { ProjectDetailPage } from './components/ProjectDetailPage';
 import { apiCheckAuth, apiLogout } from './lib/api';
+import { PORTFOLIO_CATEGORIES, toCategorySlug } from './lib/categories';
 
-type RouteState = 'public' | 'login' | 'admin';
+type RouteState =
+  | { type: 'public' }
+  | { type: 'login' }
+  | { type: 'admin' }
+  | { type: 'category'; categorySlug: string }
+  | { type: 'project'; categorySlug?: string; projectSlug: string };
 
 export default function App() {
-  const [currentRoute, setCurrentRoute] = useState<RouteState>('public');
+  const [currentRoute, setCurrentRoute] = useState<RouteState>({ type: 'public' });
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [authChecking, setAuthChecking] = useState(true);
 
@@ -39,50 +47,97 @@ export default function App() {
 
   // Determine current active route based on window.location
   const resolveRoute = (authStatus: boolean | null) => {
-    const path = window.location.pathname.toLowerCase();
-    const hash = window.location.hash.toLowerCase();
+    let path = window.location.pathname.toLowerCase().replace(/\/$/, '');
+    let hash = window.location.hash.toLowerCase().replace(/^#\/?/, '');
+
+    // Check if hash contains route path (e.g. #/works/branding)
+    const effectivePath = hash ? `/${hash}` : path || '/';
 
     const isLoginPath =
+      effectivePath === '/owner-login' ||
       path === '/owner-login' ||
-      path === '/owner-login/' ||
-      hash === '#owner-login' ||
-      hash === '#/owner-login';
+      hash === 'owner-login';
 
     const isAdminPath =
+      effectivePath === '/admin' ||
       path === '/admin' ||
-      path === '/admin/' ||
-      hash === '#admin' ||
-      hash === '#/admin' ||
-      hash === '#dashboard' ||
-      hash === '#/dashboard';
+      hash === 'admin' ||
+      hash === 'dashboard';
 
     if (isAdminPath) {
       if (authStatus === false) {
-        // Unauthenticated visitor trying to access /admin -> redirect to /owner-login
         if (hash) {
           window.location.hash = '#/owner-login';
         } else {
           window.history.replaceState({}, '', '/owner-login');
         }
-        setCurrentRoute('login');
+        setCurrentRoute({ type: 'login' });
       } else {
-        setCurrentRoute('admin');
+        setCurrentRoute({ type: 'admin' });
       }
-    } else if (isLoginPath) {
+      return;
+    }
+
+    if (isLoginPath) {
       if (authStatus === true) {
-        // Already authenticated owner visiting /owner-login -> redirect to /admin
         if (hash) {
           window.location.hash = '#/admin';
         } else {
           window.history.replaceState({}, '', '/admin');
         }
-        setCurrentRoute('admin');
+        setCurrentRoute({ type: 'admin' });
       } else {
-        setCurrentRoute('login');
+        setCurrentRoute({ type: 'login' });
       }
-    } else {
-      setCurrentRoute('public');
+      return;
     }
+
+    // Check Project Detail Route: /works/:categorySlug/:projectSlug or /project/:projectSlug
+    const projectMatch =
+      effectivePath.match(/^\/works\/([a-z0-9-]+)\/([a-z0-9-]+)$/) ||
+      path.match(/^\/works\/([a-z0-9-]+)\/([a-z0-9-]+)$/);
+
+    if (projectMatch) {
+      setCurrentRoute({
+        type: 'project',
+        categorySlug: projectMatch[1],
+        projectSlug: projectMatch[2],
+      });
+      return;
+    }
+
+    const directProjectMatch =
+      effectivePath.match(/^\/project\/([a-z0-9-]+)$/) ||
+      path.match(/^\/project\/([a-z0-9-]+)$/);
+
+    if (directProjectMatch) {
+      setCurrentRoute({
+        type: 'project',
+        projectSlug: directProjectMatch[1],
+      });
+      return;
+    }
+
+    // Check Category Route: /works/:categorySlug
+    const categoryMatch =
+      effectivePath.match(/^\/works\/([a-z0-9-]+)$/) ||
+      path.match(/^\/works\/([a-z0-9-]+)$/);
+
+    if (categoryMatch) {
+      const slug = categoryMatch[1];
+      // Only recognize if valid category or slug
+      const isKnownCategory = PORTFOLIO_CATEGORIES.some((c) => c.slug === slug);
+      if (isKnownCategory) {
+        setCurrentRoute({
+          type: 'category',
+          categorySlug: slug,
+        });
+        return;
+      }
+    }
+
+    // Default: Public Home View
+    setCurrentRoute({ type: 'public' });
   };
 
   useEffect(() => {
@@ -91,7 +146,6 @@ export default function App() {
     });
 
     const handleLocationChange = async () => {
-      // If user navigates to admin or login, verify auth status
       try {
         const res = await apiCheckAuth();
         const authStatus = Boolean(res && res.authenticated);
@@ -112,9 +166,39 @@ export default function App() {
     };
   }, []);
 
+  const handleNavigateCategory = (catSlug: string) => {
+    const slug = toCategorySlug(catSlug);
+    const targetUrl = `/works/${slug}`;
+    if (window.location.hash) {
+      window.location.hash = `#${targetUrl}`;
+    } else {
+      window.history.pushState({}, '', targetUrl);
+    }
+    setCurrentRoute({ type: 'category', categorySlug: slug });
+  };
+
+  const handleNavigateProject = (catSlug: string, projSlug: string) => {
+    const slug = toCategorySlug(catSlug);
+    const targetUrl = `/works/${slug}/${projSlug}`;
+    if (window.location.hash) {
+      window.location.hash = `#${targetUrl}`;
+    } else {
+      window.history.pushState({}, '', targetUrl);
+    }
+    setCurrentRoute({ type: 'project', categorySlug: slug, projectSlug: projSlug });
+  };
+
+  const handleNavigateHome = () => {
+    if (window.location.hash) {
+      window.location.hash = '';
+    }
+    window.history.pushState({}, '', '/');
+    setCurrentRoute({ type: 'public' });
+  };
+
   const handleLoginSuccess = () => {
     setIsAuthenticated(true);
-    setCurrentRoute('admin');
+    setCurrentRoute({ type: 'admin' });
     if (window.location.hash) {
       window.location.hash = '#/admin';
     } else {
@@ -127,7 +211,7 @@ export default function App() {
       await apiLogout();
     } catch {}
     setIsAuthenticated(false);
-    setCurrentRoute('login');
+    setCurrentRoute({ type: 'login' });
     if (window.location.hash) {
       window.location.hash = '#/owner-login';
     } else {
@@ -135,18 +219,8 @@ export default function App() {
     }
   };
 
-  const handleBackToSite = () => {
-    if (window.location.hash) {
-      window.location.hash = '';
-    }
-    if (window.location.pathname.startsWith('/admin') || window.location.pathname.startsWith('/owner-login')) {
-      window.history.pushState({}, '', '/');
-    }
-    setCurrentRoute('public');
-  };
-
   // If loading authentication state on admin/login route
-  if (authChecking && currentRoute !== 'public') {
+  if (authChecking && (currentRoute.type === 'admin' || currentRoute.type === 'login')) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center gap-3">
@@ -158,34 +232,59 @@ export default function App() {
   }
 
   // 1. OWNER ADMIN DASHBOARD (Protected)
-  if (currentRoute === 'admin') {
+  if (currentRoute.type === 'admin') {
     if (!isAuthenticated) {
       return (
         <AdminLogin
           onSuccess={handleLoginSuccess}
-          onBackToSite={handleBackToSite}
+          onBackToSite={handleNavigateHome}
         />
       );
     }
     return (
       <AdminDashboard
-        onBackToSite={handleBackToSite}
+        onBackToSite={handleNavigateHome}
         onLogout={handleLogout}
       />
     );
   }
 
   // 2. OWNER LOGIN ROUTE (/owner-login)
-  if (currentRoute === 'login') {
+  if (currentRoute.type === 'login') {
     return (
       <AdminLogin
         onSuccess={handleLoginSuccess}
-        onBackToSite={handleBackToSite}
+        onBackToSite={handleNavigateHome}
       />
     );
   }
 
-  // 3. PUBLIC WEBSITE (Normal Visitors)
+  // 3. DEDICATED CATEGORY PAGE (/works/branding, /works/social-media, etc.)
+  if (currentRoute.type === 'category') {
+    return (
+      <CategoryPage
+        categorySlug={currentRoute.categorySlug}
+        onNavigateCategory={handleNavigateCategory}
+        onNavigateHome={handleNavigateHome}
+        onNavigateProject={handleNavigateProject}
+      />
+    );
+  }
+
+  // 4. DEDICATED PROJECT DETAIL PAGE (/works/branding/jck-crypto-exchange, etc.)
+  if (currentRoute.type === 'project') {
+    return (
+      <ProjectDetailPage
+        categorySlug={currentRoute.categorySlug}
+        projectSlug={currentRoute.projectSlug}
+        onNavigateCategory={handleNavigateCategory}
+        onNavigateHome={handleNavigateHome}
+        onNavigateProject={handleNavigateProject}
+      />
+    );
+  }
+
+  // 5. PUBLIC HOMEPAGE (All sections)
   return (
     <div className="relative min-h-screen bg-background text-foreground selection:bg-accent selection:text-accent-foreground font-sans">
       <Navbar />
@@ -193,7 +292,10 @@ export default function App() {
         <Hero />
         <Stats />
         <About />
-        <Portfolio />
+        <Portfolio
+          onNavigateCategory={handleNavigateCategory}
+          onNavigateProject={handleNavigateProject}
+        />
         <Services />
         <Process />
         <Testimonials />

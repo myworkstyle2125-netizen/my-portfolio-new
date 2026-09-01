@@ -79,7 +79,19 @@ function ProjectCard({ project, onClick, className = '', isLarge = false }: Proj
   );
 }
 
-export function Portfolio() {
+import {
+  APPROVED_PROJECT_CATEGORIES,
+  PORTFOLIO_CATEGORIES,
+  isProjectInCategory,
+  toCategorySlug,
+} from '../lib/categories';
+
+interface PortfolioProps {
+  onNavigateCategory?: (categorySlug: string) => void;
+  onNavigateProject?: (categorySlug: string, projectSlug: string) => void;
+}
+
+export function Portfolio({ onNavigateCategory, onNavigateProject }: PortfolioProps = {}) {
   const [activeCategory, setActiveCategory] = useState('All');
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [projects, setProjects] = useState<Project[]>(INITIAL_PROJECTS);
@@ -111,15 +123,10 @@ export function Portfolio() {
       .catch((err) => console.log('Using static categories cache:', err));
   }, []);
 
-  // Filtered projects for category views
+  // Filtered projects for category views strictly using isProjectInCategory
   const filteredProjects = useMemo(() => {
     if (activeCategory === 'All') return projects;
-    const target = activeCategory.toLowerCase().replace(/[^a-z0-9]/g, '');
-    return projects.filter((p) => {
-      const cat = (p.category || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-      const catLabel = (p.categoryLabel || '').toLowerCase().replace(/[^a-z0-9]/g, '');
-      return cat.includes(target) || target.includes(cat) || catLabel.includes(target);
-    });
+    return projects.filter((p) => isProjectInCategory(p.category, activeCategory));
   }, [projects, activeCategory]);
 
   // Extract the 6 featured projects in the requested exact order
@@ -404,18 +411,34 @@ export function Portfolio() {
               </p>
             </div>
           ) : (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 sm:gap-7">
-              {filteredProjects.map((project, idx) => (
-                <Reveal key={project.id || project.slug || idx} delay={(idx % 3) * 80}>
-                  <ProjectCard
-                    project={project}
-                    onClick={() => setSelectedProject(project)}
-                    isLarge={project.shape === 'tall'}
-                    className={project.shape === 'tall' ? 'min-h-[480px]' : 'min-h-[360px]'}
-                  />
-                </Reveal>
-              ))}
-            </div>
+            <>
+              <div className="mb-6 flex items-center justify-between">
+                <span className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+                  Showing {filteredProjects.length} {activeCategory} {filteredProjects.length === 1 ? 'Project' : 'Projects'}
+                </span>
+                {onNavigateCategory && (
+                  <button
+                    type="button"
+                    onClick={() => onNavigateCategory(toCategorySlug(activeCategory))}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-accent hover:underline"
+                  >
+                    Open dedicated {activeCategory} page &rarr;
+                  </button>
+                )}
+              </div>
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 sm:gap-7">
+                {filteredProjects.map((project, idx) => (
+                  <Reveal key={project.id || project.slug || idx} delay={(idx % 3) * 80}>
+                    <ProjectCard
+                      project={project}
+                      onClick={() => setSelectedProject(project)}
+                      isLarge={project.shape === 'tall'}
+                      className={project.shape === 'tall' ? 'min-h-[480px]' : 'min-h-[360px]'}
+                    />
+                  </Reveal>
+                ))}
+              </div>
+            </>
           )}
         </div>
       )}

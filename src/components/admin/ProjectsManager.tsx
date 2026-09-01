@@ -7,6 +7,7 @@ import {
   ExternalLink,
   Eye,
   Filter,
+  Layers,
   Plus,
   Search,
   Sparkles,
@@ -14,7 +15,12 @@ import {
   Trash2,
 } from 'lucide-react';
 import { Category, Project } from '../../types';
-import { APPROVED_PROJECT_CATEGORIES } from '../../data/siteData';
+import {
+  APPROVED_PROJECT_CATEGORIES,
+  PORTFOLIO_CATEGORIES,
+  isProjectInCategory,
+  toCategorySlug,
+} from '../../lib/categories';
 import {
   apiDeleteProject,
   apiDuplicateProject,
@@ -47,6 +53,15 @@ export function ProjectsManager({
   const [deleting, setDeleting] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
 
+  // Calculate category counts
+  const categoryCounts = useMemo(() => {
+    const counts: Record<string, number> = { All: projects.length };
+    APPROVED_PROJECT_CATEGORIES.forEach((catName) => {
+      counts[catName] = projects.filter((p) => isProjectInCategory(p.category, catName)).length;
+    });
+    return counts;
+  }, [projects]);
+
   const filteredProjects = useMemo(() => {
     return projects.filter((p) => {
       // Search text
@@ -59,8 +74,8 @@ export function ProjectsManager({
         if (!matchesTitle && !matchesClient && !matchesCat && !matchesTools) return false;
       }
 
-      // Category filter
-      if (selectedCat !== 'All' && p.category.toLowerCase() !== selectedCat.toLowerCase()) {
+      // Category filter strictly using isProjectInCategory
+      if (selectedCat !== 'All' && !isProjectInCategory(p.category, selectedCat)) {
         return false;
       }
 
@@ -153,6 +168,54 @@ export function ProjectsManager({
         </div>
       )}
 
+      {/* Category Tabs with live count badges */}
+      <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+        <button
+          type="button"
+          onClick={() => setSelectedCat('All')}
+          className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition-all whitespace-nowrap ${
+            selectedCat === 'All'
+              ? 'bg-accent text-accent-foreground shadow-md'
+              : 'border border-border bg-surface/50 text-muted-foreground hover:text-foreground hover:border-accent/40'
+          }`}
+        >
+          <span>All Categories</span>
+          <span
+            className={`rounded-full px-2 py-0.2 text-[0.68rem] font-bold ${
+              selectedCat === 'All' ? 'bg-black/20 text-white' : 'bg-background text-muted-foreground'
+            }`}
+          >
+            {categoryCounts.All ?? 0}
+          </span>
+        </button>
+
+        {APPROVED_PROJECT_CATEGORIES.map((catName) => {
+          const isSelected = selectedCat === catName;
+          const count = categoryCounts[catName] ?? 0;
+          return (
+            <button
+              key={catName}
+              type="button"
+              onClick={() => setSelectedCat(catName)}
+              className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-xs font-semibold transition-all whitespace-nowrap ${
+                isSelected
+                  ? 'bg-accent text-accent-foreground shadow-md'
+                  : 'border border-border bg-surface/50 text-muted-foreground hover:text-foreground hover:border-accent/40'
+              }`}
+            >
+              <span>{catName}</span>
+              <span
+                className={`rounded-full px-2 py-0.2 text-[0.68rem] font-bold ${
+                  isSelected ? 'bg-black/20 text-white' : 'bg-background text-muted-foreground'
+                }`}
+              >
+                {count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
       {/* Filter and Search Bar */}
       <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 rounded-2xl border border-border bg-surface/50 p-3">
         {/* Search box */}
@@ -167,38 +230,22 @@ export function ProjectsManager({
           />
         </div>
 
-        {/* Category filter */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0">
-          <select
-            value={selectedCat}
-            onChange={(e) => setSelectedCat(e.target.value)}
-            className="rounded-xl border border-input bg-background px-3 py-2 text-xs text-foreground focus:border-accent focus:outline-none"
-          >
-            <option value="All">All Categories</option>
-            {APPROVED_PROJECT_CATEGORIES.map((catName) => (
-              <option key={catName} value={catName}>
-                {catName}
-              </option>
-            ))}
-          </select>
-
-          {/* Status pill filters */}
-          <div className="flex items-center gap-1 bg-surface rounded-xl border border-border p-1">
-            {(['all', 'published', 'draft', 'featured'] as const).map((st) => (
-              <button
-                key={st}
-                type="button"
-                onClick={() => setStatusFilter(st)}
-                className={`rounded-lg px-2.5 py-1 text-[0.7rem] font-medium capitalize transition-all ${
-                  statusFilter === st
-                    ? 'bg-accent text-accent-foreground shadow-xs'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {st}
-              </button>
-            ))}
-          </div>
+        {/* Status pill filters */}
+        <div className="flex items-center gap-1 bg-surface rounded-xl border border-border p-1">
+          {(['all', 'published', 'draft', 'featured'] as const).map((st) => (
+            <button
+              key={st}
+              type="button"
+              onClick={() => setStatusFilter(st)}
+              className={`rounded-lg px-2.5 py-1 text-[0.7rem] font-medium capitalize transition-all ${
+                statusFilter === st
+                  ? 'bg-accent text-accent-foreground shadow-xs'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {st}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -399,6 +446,7 @@ export function ProjectsManager({
         <ProjectEditorModal
           project={editingProject}
           categories={categories}
+          defaultCategory={selectedCat !== 'All' ? selectedCat : 'Branding'}
           onClose={() => setEditingProject(undefined)}
           onRefreshCategories={onRefreshCategories}
           onSaved={(_savedProj, msg) => {

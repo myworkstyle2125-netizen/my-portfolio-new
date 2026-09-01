@@ -2,22 +2,25 @@ import React, { useEffect, useState } from 'react';
 import { Check, Eye, Loader2, Plus, Sparkles, X } from 'lucide-react';
 import { Category, Project } from '../../types';
 import { apiCreateProject, apiUpdateProject } from '../../lib/api';
-import { APPROVED_PROJECT_CATEGORIES } from '../../data/siteData';
+import { APPROVED_PROJECT_CATEGORIES, toCategorySlug } from '../../lib/categories';
 import { GalleryUploader, SingleImageUploader } from './ImageUploader';
 
 interface ProjectEditorModalProps {
   project?: Project | null;
   categories: Category[];
+  defaultCategory?: string;
   onClose: () => void;
   onSaved: (savedProject: Project, successMessage?: string) => void;
   onRefreshCategories?: () => void;
 }
 
-const getInitialCategory = (raw?: string) => {
+const getInitialCategory = (raw?: string, fallback?: string) => {
+  if (raw && (APPROVED_PROJECT_CATEGORIES as readonly string[]).includes(raw)) return raw;
+  if (fallback && (APPROVED_PROJECT_CATEGORIES as readonly string[]).includes(fallback)) return fallback;
   if (!raw) return 'Branding';
   if (raw === 'Advertising') return 'Branding';
   if (raw === 'Video / Motion' || raw === 'Video' || raw === 'Motion') return 'Thumbnails';
-  return (APPROVED_PROJECT_CATEGORIES as readonly string[]).includes(raw) ? raw : 'Branding';
+  return 'Branding';
 };
 
 const COMMON_TOOLS = [
@@ -47,6 +50,7 @@ const COMMON_SERVICES = [
 export function ProjectEditorModal({
   project,
   categories,
+  defaultCategory,
   onClose,
   onSaved,
   onRefreshCategories,
@@ -55,8 +59,8 @@ export function ProjectEditorModal({
 
   const [title, setTitle] = useState(project?.title || '');
   const [slug, setSlug] = useState(project?.slug || '');
-  const [category, setCategory] = useState(getInitialCategory(project?.category));
-  const [categoryLabel, setCategoryLabel] = useState(project?.categoryLabel || project?.category || 'Branding');
+  const [category, setCategory] = useState(getInitialCategory(project?.category, defaultCategory));
+  const [categoryLabel, setCategoryLabel] = useState(project?.categoryLabel || project?.category || defaultCategory || 'Branding');
   const [client, setClient] = useState(project?.client || '');
   const [year, setYear] = useState(project?.year || new Date().getFullYear().toString());
   const [shortDescription, setShortDescription] = useState(project?.shortDescription || project?.description || '');

@@ -83,7 +83,7 @@
       "id": "proj-3",
       "slug": "creative-brand-identity",
       "title": "Creative Brand Identity",
-      "category": "Branding",
+      "category": "Print Design",
       "categoryLabel": "Branding",
       "client": "Studio Noir",
       "year": "2024",
@@ -185,14 +185,16 @@
       "hero": "/assets/work-campaign.jpg",
       "gallery": [
         "/assets/work-campaign.jpg",
-        "/assets/work-identity.jpg"
+        "/assets/work-identity.jpg",
+        "/uploads/upload-1-1788246757490-28a45c66.jpg"
       ],
       "shape": "tall",
       "featured": true,
       "published": true,
       "displayOrder": 5,
       "createdAt": "2024-12-10T00:00:00.000Z",
-      "updatedAt": "2024-12-10T00:00:00.000Z"
+      "updatedAt": "2026-09-01T07:12:48.567Z",
+      "url": ""
     },
     {
       "id": "proj-6",
@@ -332,6 +334,46 @@
   ],
   "testimonials": [
     {
+      "id": "testi-1788247072260-600c08",
+      "name": "චතුරංග",
+      "role": "Content Creator",
+      "initials": "චත",
+      "quote": "මම වැඩ කරපු හොඳම එඩිටින් ටීම් එකක්. වැඩේ හරිම පිරිසිදුයි, නිර්මාණශීලීයි. දිගටම එකට වැඩ කරන්න බලාපොරොත්තු වෙනවා.",
+      "rating": 5,
+      "status": "approved",
+      "createdAt": "2026-09-01T07:17:52.260Z"
+    },
+    {
+      "id": "testi-1788247047751-a8195b",
+      "name": "Sarah Jenkins",
+      "role": "Brand Strategist",
+      "initials": "SJ",
+      "quote": "Exceptional creativity and fast turnaround times. NIFTYGRAPHY understood our brand vision instantly and delivered stunning visuals that our audience loved",
+      "rating": 5,
+      "status": "approved",
+      "createdAt": "2026-09-01T07:17:27.751Z"
+    },
+    {
+      "id": "testi-1788247024650-1d482c",
+      "name": "සංජීව පෙරේරා",
+      "role": "Tech Reviewer SL",
+      "initials": "සප",
+      "quote": "ඉතාමත් වෘත්තීය මට්ටමේ සේවාවක්. මගේ වීඩියෝ වල සංස්කරණ කටයුතු නියමිත වෙලාවට, ඉතා උසස් තත්වයෙන් කරලා දුන්නා. ස්තූතියි NIFTYGRAPHY!",
+      "rating": 5,
+      "status": "approved",
+      "createdAt": "2026-09-01T07:17:04.650Z"
+    },
+    {
+      "id": "testi-1788246989847-632c36",
+      "name": "Alex Morgan",
+      "role": "YouTube Creator",
+      "initials": "AM",
+      "quote": "Working with NIFTYGRAPHY was an absolute game-changer for my channel. The video editing quality and attention to detail completely exceeded my expectations. Highly recommended!",
+      "rating": 5,
+      "status": "approved",
+      "createdAt": "2026-09-01T07:16:29.847Z"
+    },
+    {
       "id": "testi-1",
       "name": "Amara Silva",
       "role": "Founder, Lumen Studio - Sri Lanka",
@@ -403,10 +445,11 @@
     "ownerName": "P.D. Yadeesha Shen Perera",
     "bio": "Hi, I'm P.D. Yadeesha Shen Perera. With 3+ years of experience in graphic design, I focus on crafting distinct visual identities and engaging design solutions. I blend thoughtful aesthetics with functional layout to build memorable brand experiences.",
     "adminUsername": "NIFTYGRAPHY",
-    "adminPasswordHash": "2bf5412fb10dca23cbcf81297e68c07cce4bf38f83733077755efc27181ea8b7"
+    "adminPasswordHash": "ddd591b4e5d9c73ffc4cad957087fd3309505604464643bbec6018b3b884b4c4"
   },
   "adminTokens": [
     "0643588744713e172cf3d0eac28d395ccb946e60ac4243c02ad792dde2883c89",
-    "703255a577ea4b1c391a8cedb600650a1910d495a9cdd7cad186aa3d11a92eeb"
+    "703255a577ea4b1c391a8cedb600650a1910d495a9cdd7cad186aa3d11a92eeb",
+    "b392cac4256e842be0e83b929d873c1e4809523984ab40ba5e208eba8c932686"
   ]
 }

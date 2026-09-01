@@ -491,25 +491,121 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// Serve uploaded images statically with fallback and proper content-type
+function generatePlaceholderSvg(title = 'Design Asset', width = 1200, height = 800): string {
+  const displayTitle = (title || 'Design Asset')
+    .replace(/[-_]/g, ' ')
+    .replace(/\.[a-zA-Z0-9]+$/, '')
+    .trim();
+  const cleanTitle = displayTitle.length > 32 ? displayTitle.slice(0, 29) + '...' : displayTitle;
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" fill="none">
+    <defs>
+      <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#09090b" />
+        <stop offset="50%" stop-color="#111116" />
+        <stop offset="100%" stop-color="#181820" />
+      </linearGradient>
+      <linearGradient id="brandGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#3b82f6" />
+        <stop offset="100%" stop-color="#8b5cf6" />
+      </linearGradient>
+    </defs>
+    <rect width="${width}" height="${height}" fill="url(#bg)"/>
+    <circle cx="${width / 2}" cy="${height / 2 - 35}" r="80" fill="url(#brandGrad)" opacity="0.15" />
+    <rect x="${width / 2 - 32}" y="${height / 2 - 67}" width="64" height="64" rx="14" fill="#14141d" stroke="#3b82f6" stroke-width="2" />
+    <path d="M ${width / 2 - 14} ${height / 2 - 28} L ${width / 2 - 3} ${height / 2 - 42} L ${width / 2 + 7} ${height / 2 - 32} L ${width / 2 + 14} ${height / 2 - 39} L ${width / 2 + 14} ${height / 2 - 21} L ${width / 2 - 14} ${height / 2 - 21} Z" fill="#60a5fa" opacity="0.85"/>
+    <circle cx="${width / 2 - 7}" cy="${height / 2 - 47}" r="4" fill="#93c5fd"/>
+    <text x="50%" y="${height / 2 + 32}" font-family="system-ui, -apple-system, sans-serif" font-size="20" font-weight="600" fill="#f3f4f6" text-anchor="middle" letter-spacing="0.5">${cleanTitle.toUpperCase()}</text>
+    <text x="50%" y="${height / 2 + 58}" font-family="system-ui, -apple-system, sans-serif" font-size="13" font-weight="500" fill="#9ca3af" text-anchor="middle">NIFTYGRAPHY PORTFOLIO</text>
+  </svg>`;
+}
+
+// Serve uploaded images and assets statically with fallback and proper content-type
 app.use('/uploads', express.static(DATA_UPLOAD_DIR));
 app.use('/uploads', express.static(PUBLIC_UPLOAD_DIR));
 app.use('/assets', express.static(path.join(process.cwd(), 'public', 'assets')));
+app.use(express.static(path.join(process.cwd(), 'public')));
 
-// Direct file serving route for uploads ensuring reliable image retrieval
+// Favicon and icon handlers
+app.get(['/app-favicon.ico', '/favicon.ico'], (_req, res) => {
+  const icoPaths = [
+    path.join(process.cwd(), 'public', 'app-favicon.ico'),
+    path.join(process.cwd(), 'public', 'favicon.ico'),
+    path.join(process.cwd(), 'public', 'favicon.png'),
+  ];
+  for (const p of icoPaths) {
+    if (fs.existsSync(p)) return res.sendFile(p);
+  }
+  res.setHeader('Content-Type', 'image/svg+xml');
+  return res.send(generatePlaceholderSvg('NG', 64, 64));
+});
+
+app.get(['/favicon.png', '/apple-touch-icon.png'], (_req, res) => {
+  const pngPath = path.join(process.cwd(), 'public', 'favicon.png');
+  if (fs.existsSync(pngPath)) return res.sendFile(pngPath);
+  res.setHeader('Content-Type', 'image/svg+xml');
+  return res.send(generatePlaceholderSvg('NG', 64, 64));
+});
+
+// Direct file serving route for uploads ensuring reliable image retrieval and zero 404 download errors
 app.get('/uploads/:filename', (req, res) => {
   const { filename } = req.params;
   const safeFilename = path.basename(filename);
-  const dataPath = path.join(DATA_UPLOAD_DIR, safeFilename);
-  const publicPath = path.join(PUBLIC_UPLOAD_DIR, safeFilename);
+  const searchPaths = [
+    path.join(DATA_UPLOAD_DIR, safeFilename),
+    path.join(PUBLIC_UPLOAD_DIR, safeFilename),
+    path.join(process.cwd(), 'public', 'assets', safeFilename),
+    path.join(process.cwd(), 'public', safeFilename),
+  ];
 
-  if (fs.existsSync(dataPath)) {
-    return res.sendFile(dataPath);
+  for (const p of searchPaths) {
+    if (fs.existsSync(p)) {
+      return res.sendFile(p);
+    }
   }
-  if (fs.existsSync(publicPath)) {
-    return res.sendFile(publicPath);
+
+  res.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
+  return res.send(generatePlaceholderSvg(safeFilename));
+});
+
+// Direct file serving route for assets ensuring reliable image retrieval
+app.get('/assets/:filename', (req, res) => {
+  const { filename } = req.params;
+  const safeFilename = path.basename(filename);
+  const searchPaths = [
+    path.join(process.cwd(), 'public', 'assets', safeFilename),
+    path.join(PUBLIC_UPLOAD_DIR, safeFilename),
+    path.join(DATA_UPLOAD_DIR, safeFilename),
+    path.join(process.cwd(), 'public', safeFilename),
+  ];
+
+  for (const p of searchPaths) {
+    if (fs.existsSync(p)) {
+      return res.sendFile(p);
+    }
   }
-  return res.status(404).send('Image not found');
+
+  res.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
+  return res.send(generatePlaceholderSvg(safeFilename));
+});
+
+// Root image fallback route (for direct requests like /hero-abstract.jpg or /image.jpg)
+app.get('/:filename(*\\.(?:jpg|jpeg|png|webp|svg|ico|gif))', (req, res) => {
+  const filename = path.basename(req.params.filename);
+  const searchPaths = [
+    path.join(process.cwd(), 'public', filename),
+    path.join(process.cwd(), 'public', 'assets', filename),
+    path.join(PUBLIC_UPLOAD_DIR, filename),
+    path.join(DATA_UPLOAD_DIR, filename),
+  ];
+
+  for (const p of searchPaths) {
+    if (fs.existsSync(p)) {
+      return res.sendFile(p);
+    }
+  }
+
+  res.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
+  return res.send(generatePlaceholderSvg(filename));
 });
 
 // Health check endpoint

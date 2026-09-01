@@ -92,7 +92,7 @@ export function AdminLogin({ onSuccess, onBackToSite }: AdminLoginProps) {
                 autoComplete="username"
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="niftygraphy24@gmail.com"
+                placeholder="NIFTYGRAPHY"
                 className="w-full rounded-xl border border-input bg-background/70 pl-10 pr-4 py-2.5 text-xs text-foreground placeholder:text-muted-foreground/60 focus:border-accent focus:outline-none transition-colors"
               />
             </div>

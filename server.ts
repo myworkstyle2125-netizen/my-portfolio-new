@@ -383,7 +383,8 @@ const INITIAL_SETTINGS = {
   location: 'Colombo, Sri Lanka — working worldwide',
   ownerName: 'P.D. Yadeesha Shen Perera',
   bio: "Hi, I'm P.D. Yadeesha Shen Perera. With 3+ years of experience in graphic design, I focus on crafting distinct visual identities and engaging design solutions. I blend thoughtful aesthetics with functional layout to build memorable brand experiences.",
-  adminPasswordHash: crypto.createHash('sha256').update('niftygraphy2026').digest('hex'),
+  adminUsername: 'NIFTYGRAPHY',
+  adminPasswordHash: crypto.createHash('sha256').update('NIFTYGRAPHY').digest('hex'),
 };
 
 interface DbSchema {
@@ -431,15 +432,21 @@ function readDb(): DbSchema {
   try {
     if (fs.existsSync(DB_FILE)) {
       const data = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
-      return {
+      const settings = { ...INITIAL_SETTINGS, ...(data.settings || {}) };
+      // Ensure admin credentials match NIFTYGRAPHY
+      settings.adminUsername = 'NIFTYGRAPHY';
+      settings.adminPasswordHash = crypto.createHash('sha256').update('NIFTYGRAPHY').digest('hex');
+
+      const loadedDb = {
         projects: sanitizeProjects(data.projects || INITIAL_PROJECTS),
         categories: sanitizeCategories(data.categories || INITIAL_CATEGORIES),
         packages: data.packages || INITIAL_PACKAGES,
         testimonials: data.testimonials && data.testimonials.length > 0 ? data.testimonials : INITIAL_TESTIMONIALS,
         messages: data.messages || [],
-        settings: { ...INITIAL_SETTINGS, ...(data.settings || {}) },
+        settings,
         adminTokens: data.adminTokens || [],
       };
+      return loadedDb;
     }
   } catch (err) {
     console.error('Error reading db:', err);
@@ -522,20 +529,29 @@ function checkAuth(req: express.Request): boolean {
 // AUTH API
 // ----------------------------------------------------
 app.post('/api/auth/login', (req, res) => {
-  const { email, username, password } = req.body;
-  const identifier = (email || username || '').toLowerCase().trim();
+  const { email, username, identifier: rawId, password } = req.body;
+  const rawIdentifier = (username || email || rawId || '').trim();
+  const identifier = rawIdentifier.toLowerCase();
   const db = readDb();
   const inputHash = crypto.createHash('sha256').update(String(password || '')).digest('hex');
 
-  // Accept owner email, username (niftygraphy, admin, owner) or current settings email
+  const adminUser = (db.settings.adminUsername || 'NIFTYGRAPHY').trim().toLowerCase();
+  const expectedHash = db.settings.adminPasswordHash || crypto.createHash('sha256').update('NIFTYGRAPHY').digest('hex');
+
+  // Accept username NIFTYGRAPHY, owner email, or admin
   const isIdentifierMatch =
     !identifier ||
+    identifier === adminUser ||
+    identifier === 'niftygraphy' ||
     identifier === db.settings.email.toLowerCase().trim() ||
     identifier === 'admin' ||
-    identifier === 'niftygraphy' ||
-    identifier === 'owner' ||
-    identifier.includes('niftygraphy');
-  const isPasswordMatch = inputHash === db.settings.adminPasswordHash || password === 'niftygraphy2026';
+    identifier === 'owner';
+
+  // Check password against stored SHA-256 hash or exact NIFTYGRAPHY
+  const isPasswordMatch =
+    inputHash === expectedHash ||
+    password === 'NIFTYGRAPHY' ||
+    inputHash === crypto.createHash('sha256').update('NIFTYGRAPHY').digest('hex');
 
   if (isIdentifierMatch && isPasswordMatch) {
     const token = crypto.randomBytes(32).toString('hex');
@@ -546,13 +562,13 @@ app.post('/api/auth/login', (req, res) => {
       token,
       user: {
         email: db.settings.email,
-        name: db.settings.ownerName,
+        name: db.settings.adminUsername || 'NIFTYGRAPHY',
         role: 'owner',
       },
     });
   }
 
-  return res.status(401).json({ success: false, message: 'Invalid email/username or password' });
+  return res.status(401).json({ success: false, message: 'Invalid username or password' });
 });
 
 app.get('/api/auth/me', (req, res) => {

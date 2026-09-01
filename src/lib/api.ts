@@ -26,11 +26,16 @@ function getAuthHeaders(): HeadersInit {
 // ----------------------------------------------------
 // AUTH API
 // ----------------------------------------------------
-export async function apiLogin(password: string, email?: string) {
+export async function apiLogin(password: string, usernameOrEmail?: string) {
   const res = await fetch(`${API_BASE}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({
+      email: usernameOrEmail,
+      username: usernameOrEmail,
+      identifier: usernameOrEmail,
+      password,
+    }),
   });
   const data = await res.json();
   if (!res.ok || !data.success) {

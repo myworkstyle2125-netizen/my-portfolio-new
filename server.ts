@@ -772,7 +772,7 @@ app.post('/api/upload', (req, res) => {
   }
 
   // Handle multipart form data
-  upload.array('files', 12)(req, res, (err) => {
+  (upload.array('files', 12) as any)(req, res, (err: any) => {
     if (err) {
       console.error('Multer upload error:', err);
       return res.status(400).json({ success: false, message: err.message || 'File upload failed' });
@@ -840,7 +840,7 @@ app.post('/api/upload/single', (req, res) => {
     }
   }
 
-  upload.single('file')(req, res, (err) => {
+  (upload.single('file') as any)(req, res, (err: any) => {
     if (err) {
       return res.status(400).json({ success: false, message: err.message || 'File upload failed' });
     }

@@ -23,9 +23,10 @@ export default function App() {
   const [authChecking, setAuthChecking] = useState(true);
 
   // Check initial authentication once on mount
-  const checkInitialAuth = async () => {
+  const checkInitialAuth = async (): Promise<boolean> => {
     try {
-      const isAuth = await apiCheckAuth();
+      const res = await apiCheckAuth();
+      const isAuth = Boolean(res && res.authenticated);
       setIsAuthenticated(isAuth);
       return isAuth;
     } catch {
@@ -91,9 +92,15 @@ export default function App() {
 
     const handleLocationChange = async () => {
       // If user navigates to admin or login, verify auth status
-      const authStatus = await apiCheckAuth().catch(() => false);
-      setIsAuthenticated(authStatus);
-      resolveRoute(authStatus);
+      try {
+        const res = await apiCheckAuth();
+        const authStatus = Boolean(res && res.authenticated);
+        setIsAuthenticated(authStatus);
+        resolveRoute(authStatus);
+      } catch {
+        setIsAuthenticated(false);
+        resolveRoute(false);
+      }
     };
 
     window.addEventListener('hashchange', handleLocationChange);

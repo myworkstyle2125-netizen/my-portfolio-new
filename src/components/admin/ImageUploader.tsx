@@ -6,6 +6,7 @@ interface SingleImageUploaderProps {
   label: string;
   value?: string;
   onChange: (url: string) => void;
+  onUploadingChange?: (uploading: boolean) => void;
   description?: string;
   aspect?: 'video' | 'square' | 'auto';
   required?: boolean;
@@ -15,6 +16,7 @@ export function SingleImageUploader({
   label,
   value,
   onChange,
+  onUploadingChange,
   description,
   aspect = 'video',
   required = false,
@@ -42,6 +44,7 @@ export function SingleImageUploader({
 
     setError(null);
     setUploading(true);
+    onUploadingChange?.(true);
 
     // Instant local preview
     const preview = URL.createObjectURL(file);
@@ -60,6 +63,7 @@ export function SingleImageUploader({
       }
     } finally {
       setUploading(false);
+      onUploadingChange?.(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -243,6 +247,7 @@ export function SingleImageUploader({
 interface GalleryUploaderProps {
   images: string[];
   onChange: (images: string[]) => void;
+  onUploadingChange?: (uploading: boolean) => void;
   onSetThumbnail?: (url: string) => void;
   currentThumbnail?: string;
 }
@@ -250,6 +255,7 @@ interface GalleryUploaderProps {
 export function GalleryUploader({
   images,
   onChange,
+  onUploadingChange,
   onSetThumbnail,
   currentThumbnail,
 }: GalleryUploaderProps) {
@@ -266,6 +272,7 @@ export function GalleryUploader({
     }
     setError(null);
     setUploading(true);
+    onUploadingChange?.(true);
     try {
       const urls = await apiUploadFiles(validFiles);
       onChange([...images, ...urls]);
@@ -274,6 +281,7 @@ export function GalleryUploader({
       setError(err.message || 'Gallery upload failed.');
     } finally {
       setUploading(false);
+      onUploadingChange?.(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }

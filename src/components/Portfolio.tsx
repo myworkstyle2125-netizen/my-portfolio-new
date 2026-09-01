@@ -124,25 +124,43 @@ export function Portfolio() {
 
   // Extract the 6 featured projects in the requested exact order
   const featuredProjects = useMemo(() => {
-    const pool = [...projects, ...INITIAL_PROJECTS];
-    const map = new Map<string, Project>();
-    pool.forEach((p) => {
-      if (p.slug && !map.has(p.slug)) map.set(p.slug, p);
-      if (p.title && !map.has(p.title.toLowerCase())) map.set(p.title.toLowerCase(), p);
+    // Live database projects take absolute precedence
+    const liveList = projects && projects.length > 0 ? projects : INITIAL_PROJECTS;
+
+    const idMap = new Map<string, Project>();
+    const slugMap = new Map<string, Project>();
+    const titleMap = new Map<string, Project>();
+
+    liveList.forEach((p) => {
+      if (p.id) idMap.set(p.id, p);
+      if (p.slug) slugMap.set(p.slug, p);
+      if (p.title) titleMap.set(p.title.toLowerCase().trim(), p);
     });
 
     const list: Project[] = [];
+
+    // Match each of the 6 canonical slots by ID, slug, display order, or index
     FEATURED_SLUGS.forEach((slug, idx) => {
-      const found = map.get(slug) || pool[idx];
-      if (found && !list.some((item) => item.slug === found.slug)) {
+      const canonicalId = `proj-${idx + 1}`;
+      const found =
+        idMap.get(canonicalId) ||
+        slugMap.get(slug) ||
+        liveList.find((p) => p.displayOrder === idx + 1) ||
+        liveList[idx] ||
+        INITIAL_PROJECTS[idx];
+
+      if (found && !list.some((item) => item.id === found.id || item.slug === found.slug)) {
         list.push(found);
       }
     });
 
     // Ensure we always have 6
-    while (list.length < 6 && pool[list.length]) {
-      list.push(pool[list.length]);
-    }
+    liveList.forEach((p) => {
+      if (list.length < 6 && !list.some((item) => item.id === p.id || item.slug === p.slug)) {
+        list.push(p);
+      }
+    });
+
     return list.slice(0, 6);
   }, [projects]);
 

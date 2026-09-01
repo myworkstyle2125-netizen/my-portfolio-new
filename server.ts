@@ -48,6 +48,18 @@ const upload = multer({
 });
 
 function saveBase64Image(dataUrlOrBase64: string, originalName = 'upload.jpg'): string {
+  if (!dataUrlOrBase64 || typeof dataUrlOrBase64 !== 'string') return '';
+  
+  // If it's already a relative URL or absolute URL, return as is
+  if (
+    dataUrlOrBase64.startsWith('/uploads/') ||
+    dataUrlOrBase64.startsWith('/assets/') ||
+    dataUrlOrBase64.startsWith('http://') ||
+    dataUrlOrBase64.startsWith('https://')
+  ) {
+    return dataUrlOrBase64;
+  }
+
   let base64Data = dataUrlOrBase64;
   let ext = '.jpg';
 
@@ -65,17 +77,22 @@ function saveBase64Image(dataUrlOrBase64: string, originalName = 'upload.jpg'): 
 
   const cleanName = path.basename(originalName, path.extname(originalName)).replace(/[^a-zA-Z0-9_-]/g, '-').toLowerCase() || 'design';
   const filename = `${cleanName}-${Date.now()}-${crypto.randomBytes(4).toString('hex')}${ext}`;
-  const buffer = Buffer.from(base64Data, 'base64');
-
-  const dataPath = path.join(DATA_UPLOAD_DIR, filename);
-  const publicPath = path.join(PUBLIC_UPLOAD_DIR, filename);
-
-  fs.writeFileSync(dataPath, buffer);
+  
   try {
-    fs.writeFileSync(publicPath, buffer);
-  } catch {}
+    const buffer = Buffer.from(base64Data, 'base64');
+    const dataPath = path.join(DATA_UPLOAD_DIR, filename);
+    const publicPath = path.join(PUBLIC_UPLOAD_DIR, filename);
 
-  return `/uploads/${filename}`;
+    fs.writeFileSync(dataPath, buffer);
+    try {
+      fs.writeFileSync(publicPath, buffer);
+    } catch {}
+
+    return `/uploads/${filename}`;
+  } catch (err) {
+    console.error('Error saving base64 image:', err);
+    return dataUrlOrBase64;
+  }
 }
 
 // Database initialization
@@ -793,6 +810,26 @@ app.post('/api/projects', (req, res) => {
     counter++;
   }
 
+  // Process images
+  const thumbVal = body.thumbnail || body.hero || '/assets/work-jck.jpg';
+  const heroVal = body.hero || body.thumbnail || '/assets/work-jck.jpg';
+  
+  const savedThumbnail = typeof thumbVal === 'string' && thumbVal.startsWith('data:image/')
+    ? saveBase64Image(thumbVal, `${slug}-thumb.jpg`)
+    : thumbVal;
+    
+  const savedHero = typeof heroVal === 'string' && heroVal.startsWith('data:image/')
+    ? saveBase64Image(heroVal, `${slug}-hero.jpg`)
+    : heroVal;
+
+  const rawGallery = Array.isArray(body.gallery) && body.gallery.length > 0 ? body.gallery : [savedHero];
+  const savedGallery = rawGallery.map((img: string, i: number) => {
+    if (typeof img === 'string' && img.startsWith('data:image/')) {
+      return saveBase64Image(img, `${slug}-gallery-${i + 1}.jpg`);
+    }
+    return img;
+  });
+
   const newProject = {
     id: `proj-${Date.now()}-${crypto.randomBytes(3).toString('hex')}`,
     slug,
@@ -810,9 +847,9 @@ app.post('/api/projects', (req, res) => {
     results: body.results || '',
     tools: Array.isArray(body.tools) ? body.tools : (typeof body.tools === 'string' ? body.tools.split(',').map((t: string) => t.trim()).filter(Boolean) : ['Photoshop', 'Illustrator']),
     servicesProvided: Array.isArray(body.servicesProvided) ? body.servicesProvided : [],
-    thumbnail: body.thumbnail || body.hero || '/assets/work-jck.jpg',
-    hero: body.hero || body.thumbnail || '/assets/work-jck.jpg',
-    gallery: Array.isArray(body.gallery) && body.gallery.length > 0 ? body.gallery : [body.hero || body.thumbnail || '/assets/work-jck.jpg'],
+    thumbnail: savedThumbnail,
+    hero: savedHero,
+    gallery: savedGallery,
     shape: body.shape === 'tall' ? 'tall' : 'wide',
     url: body.url || '',
     featured: Boolean(body.featured),
@@ -843,16 +880,50 @@ app.put('/api/projects/:id', (req, res) => {
 
   const existing = db.projects[index];
   const body = req.body;
+  const targetSlug = (body.slug ? body.slug.trim() : existing.slug) || 'project';
+
+  // Process thumbnail (preserve existing if not changed, convert if base64)
+  let updatedThumbnail = existing.thumbnail;
+  if (body.thumbnail !== undefined && body.thumbnail !== null) {
+    if (typeof body.thumbnail === 'string' && body.thumbnail.startsWith('data:image/')) {
+      updatedThumbnail = saveBase64Image(body.thumbnail, `${targetSlug}-thumb.jpg`);
+    } else if (body.thumbnail !== '') {
+      updatedThumbnail = body.thumbnail;
+    }
+  }
+
+  // Process hero (preserve existing if not changed, convert if base64)
+  let updatedHero = existing.hero;
+  if (body.hero !== undefined && body.hero !== null) {
+    if (typeof body.hero === 'string' && body.hero.startsWith('data:image/')) {
+      updatedHero = saveBase64Image(body.hero, `${targetSlug}-hero.jpg`);
+    } else if (body.hero !== '') {
+      updatedHero = body.hero;
+    }
+  }
+
+  // Process gallery
+  let updatedGallery = existing.gallery || [];
+  if (Array.isArray(body.gallery)) {
+    updatedGallery = body.gallery.map((img: string, i: number) => {
+      if (typeof img === 'string' && img.startsWith('data:image/')) {
+        return saveBase64Image(img, `${targetSlug}-gallery-${i + 1}.jpg`);
+      }
+      return img;
+    });
+  }
 
   const updatedProject = {
     ...existing,
     ...body,
+    thumbnail: updatedThumbnail,
+    hero: updatedHero,
+    gallery: updatedGallery,
     category: body.category ? cleanCategory(body.category) : cleanCategory(existing.category),
     id: existing.id,
-    slug: body.slug ? body.slug.trim() : existing.slug,
+    slug: targetSlug,
     tools: Array.isArray(body.tools) ? body.tools : (typeof body.tools === 'string' ? body.tools.split(',').map((t: string) => t.trim()).filter(Boolean) : existing.tools),
     servicesProvided: Array.isArray(body.servicesProvided) ? body.servicesProvided : existing.servicesProvided,
-    gallery: Array.isArray(body.gallery) ? body.gallery : existing.gallery,
     updatedAt: new Date().toISOString(),
   };
 

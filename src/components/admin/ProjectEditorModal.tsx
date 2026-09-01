@@ -79,8 +79,14 @@ export function ProjectEditorModal({
   const [published, setPublished] = useState(project?.published ?? true);
   const [displayOrder, setDisplayOrder] = useState(project?.displayOrder ?? 1);
 
+  const [thumbnailUploading, setThumbnailUploading] = useState(false);
+  const [heroUploading, setHeroUploading] = useState(false);
+  const [galleryUploading, setGalleryUploading] = useState(false);
+
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const isUploading = thumbnailUploading || heroUploading || galleryUploading;
 
   // Auto-generate slug from title if new
   useEffect(() => {
@@ -137,6 +143,11 @@ export function ProjectEditorModal({
     setError(null);
     const effectivePublished = publishStatus !== undefined ? publishStatus : published;
 
+    if (isUploading) {
+      setError('Please wait for the image upload to finish before saving.');
+      return;
+    }
+
     // Strict validation: Required fields
     if (!thumbnail && !hero && gallery.length === 0) {
       setError('Please upload a project image.');
@@ -151,9 +162,9 @@ export function ProjectEditorModal({
       return;
     }
 
-    const finalThumb = thumbnail || hero || gallery[0] || '';
-    const finalHero = hero || thumbnail || gallery[0] || '';
-    const finalGallery = gallery.length > 0 ? gallery : [finalHero];
+    const finalThumb = thumbnail || (isEdit ? (project?.thumbnail || '') : (hero || gallery[0] || ''));
+    const finalHero = hero || (isEdit ? (project?.hero || '') : (thumbnail || gallery[0] || ''));
+    const finalGallery = gallery.length > 0 ? gallery : (finalHero ? [finalHero] : []);
 
     setSaving(true);
     try {
@@ -188,27 +199,21 @@ export function ProjectEditorModal({
       if (isEdit && (project?.id || project?.slug)) {
         const idToUpdate = project.id || project.slug;
         saved = await apiUpdateProject(idToUpdate, payload);
-        if (effectivePublished && project.published === false) {
-          message = 'Project published successfully.';
-        } else if (!effectivePublished) {
-          message = 'Draft saved successfully.';
-        } else {
-          message = 'Project updated successfully.';
-        }
+        message = effectivePublished
+          ? 'Project updated and published successfully.'
+          : 'Project updated and saved as draft.';
       } else {
         saved = await apiCreateProject(payload);
-        if (effectivePublished) {
-          message = 'Project published successfully.';
-        } else {
-          message = 'Draft saved successfully.';
-        }
+        message = effectivePublished
+          ? 'Project updated and published successfully.'
+          : 'Draft saved successfully.';
       }
 
       onSaved(saved, message);
       onClose();
     } catch (err: any) {
-      console.error(err);
-      setError(err.message || 'Failed to save project. Please check fields and retry.');
+      console.error('Project save error:', err);
+      setError(err.message || 'Failed to update project. Please check fields and retry.');
     } finally {
       setSaving(false);
     }
@@ -340,10 +345,11 @@ export function ProjectEditorModal({
                 value={thumbnail}
                 onChange={(url) => {
                   setThumbnail(url);
-                  if (url && !hero) {
+                  if (!isEdit && url && !hero) {
                     setHero(url);
                   }
                 }}
+                onUploadingChange={setThumbnailUploading}
                 aspect="video"
                 required
               />
@@ -355,10 +361,11 @@ export function ProjectEditorModal({
                 value={hero}
                 onChange={(url) => {
                   setHero(url);
-                  if (url && !thumbnail) {
+                  if (!isEdit && url && !thumbnail) {
                     setThumbnail(url);
                   }
                 }}
+                onUploadingChange={setHeroUploading}
                 aspect="video"
               />
             </div>
@@ -368,6 +375,7 @@ export function ProjectEditorModal({
               <GalleryUploader
                 images={gallery}
                 onChange={setGallery}
+                onUploadingChange={setGalleryUploading}
                 currentThumbnail={thumbnail}
                 onSetThumbnail={(url) => setThumbnail(url)}
               />
@@ -610,7 +618,7 @@ export function ProjectEditorModal({
           <div className="flex items-center gap-3 w-full sm:w-auto">
             <button
               type="button"
-              disabled={saving}
+              disabled={saving || isUploading}
               onClick={() => handleSave(false)}
               className="w-full sm:w-auto rounded-full border border-border bg-surface px-6 py-2.5 text-xs font-medium text-foreground hover:border-accent/60 disabled:opacity-50"
             >
@@ -619,13 +627,17 @@ export function ProjectEditorModal({
 
             <button
               type="button"
-              disabled={saving}
+              disabled={saving || isUploading}
               onClick={() => handleSave(true)}
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-full bg-gradient-accent px-7 py-2.5 text-xs font-medium text-accent-foreground shadow-md transition-transform hover:scale-102 disabled:opacity-50"
             >
               {saving ? (
                 <>
-                  Saving <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  {isEdit ? 'Updating...' : 'Publishing...'} <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                </>
+              ) : isUploading ? (
+                <>
+                  Uploading Design... <Loader2 className="h-3.5 w-3.5 animate-spin" />
                 </>
               ) : isEdit ? (
                 'Update & Publish'

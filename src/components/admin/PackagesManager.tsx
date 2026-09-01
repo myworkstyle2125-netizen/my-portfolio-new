@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Check, Edit, Package, Plus, Sparkles, Trash2, X } from 'lucide-react';
 import { PackageItem } from '../../types';
-import { apiGetPackages } from '../../lib/api';
+import { apiGetPackages, getAdminToken } from '../../lib/api';
 
 interface PackagesManagerProps {
   packages: PackageItem[];
@@ -61,7 +61,7 @@ export function PackagesManager({ packages, onRefresh }: PackagesManagerProps) {
         popular,
       };
 
-      const token = localStorage.getItem('niftygraphy_admin_token');
+      const token = getAdminToken();
       const headers = {
         'Content-Type': 'application/json',
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -94,7 +94,7 @@ export function PackagesManager({ packages, onRefresh }: PackagesManagerProps) {
   const handleDelete = async (id: string) => {
     if (!confirm('Delete this design package?')) return;
     try {
-      const token = localStorage.getItem('niftygraphy_admin_token');
+      const token = getAdminToken();
       await fetch(`/api/packages/${id}`, {
         method: 'DELETE',
         headers: token ? { Authorization: `Bearer ${token}` } : {},

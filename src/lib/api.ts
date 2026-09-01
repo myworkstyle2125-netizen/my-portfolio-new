@@ -3,15 +3,52 @@ import { APPROVED_CATEGORY_ITEMS, APPROVED_PROJECT_CATEGORIES } from '../data/si
 
 export const API_BASE = '/api';
 
+const memoryStore: Record<string, string> = {};
+
+export const safeStorage = {
+  getItem: (key: string): string | null => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        return window.localStorage.getItem(key);
+      }
+    } catch (err) {
+      console.warn(`LocalStorage read blocked for key "${key}", using memory fallback.`, err);
+    }
+    return memoryStore[key] ?? null;
+  },
+  setItem: (key: string, value: string): void => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.setItem(key, value);
+        return;
+      }
+    } catch (err) {
+      console.warn(`LocalStorage write blocked for key "${key}", using memory fallback.`, err);
+    }
+    memoryStore[key] = value;
+  },
+  removeItem: (key: string): void => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.removeItem(key);
+        return;
+      }
+    } catch (err) {
+      console.warn(`LocalStorage delete blocked for key "${key}", using memory fallback.`, err);
+    }
+    delete memoryStore[key];
+  },
+};
+
 export function getAdminToken(): string | null {
-  return localStorage.getItem('niftygraphy_admin_token');
+  return safeStorage.getItem('niftygraphy_admin_token');
 }
 
 export function setAdminToken(token: string | null) {
   if (token) {
-    localStorage.setItem('niftygraphy_admin_token', token);
+    safeStorage.setItem('niftygraphy_admin_token', token);
   } else {
-    localStorage.removeItem('niftygraphy_admin_token');
+    safeStorage.removeItem('niftygraphy_admin_token');
   }
 }
 
@@ -355,7 +392,7 @@ const LOCAL_TESTIMONIALS_KEY = 'niftygraphy_local_reviews';
 
 export function getLocalTestimonials(): Testimonial[] {
   try {
-    const raw = localStorage.getItem(LOCAL_TESTIMONIALS_KEY);
+    const raw = safeStorage.getItem(LOCAL_TESTIMONIALS_KEY);
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
@@ -366,7 +403,7 @@ export function saveLocalTestimonial(testimonial: Testimonial) {
   try {
     const current = getLocalTestimonials();
     const updated = [testimonial, ...current.filter((t) => t.id !== testimonial.id)];
-    localStorage.setItem(LOCAL_TESTIMONIALS_KEY, JSON.stringify(updated));
+    safeStorage.setItem(LOCAL_TESTIMONIALS_KEY, JSON.stringify(updated));
   } catch (err) {
     console.error('Error saving local testimonial:', err);
   }
@@ -447,7 +484,7 @@ export async function apiDeleteTestimonial(id: string) {
   // Also remove from local storage
   try {
     const current = getLocalTestimonials();
-    localStorage.setItem(LOCAL_TESTIMONIALS_KEY, JSON.stringify(current.filter((t) => t.id !== id)));
+    safeStorage.setItem(LOCAL_TESTIMONIALS_KEY, JSON.stringify(current.filter((t) => t.id !== id)));
   } catch {}
   return res.json();
 }

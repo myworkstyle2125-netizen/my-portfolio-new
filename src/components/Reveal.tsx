@@ -8,6 +8,14 @@ export function useReveal() {
     const el = ref.current;
     if (!el) return;
 
+    // Check if element is already within viewport immediately
+    try {
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight && rect.bottom > 0) {
+        setVisible(true);
+      }
+    } catch {}
+
     if (typeof IntersectionObserver === 'undefined') {
       setVisible(true);
       return;
@@ -22,11 +30,20 @@ export function useReveal() {
           }
         }
       },
-      { threshold: 0.12, rootMargin: '0px 0px -8% 0px' }
+      { threshold: 0.05, rootMargin: '50px 0px 50px 0px' }
     );
 
     observer.observe(el);
-    return () => observer.disconnect();
+
+    // Fallback timer: ensure visible after 500ms so content is never hidden
+    const timer = setTimeout(() => {
+      setVisible(true);
+    }, 500);
+
+    return () => {
+      observer.disconnect();
+      clearTimeout(timer);
+    };
   }, []);
 
   return { ref, visible };

@@ -20,8 +20,24 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&amp;family=Inter:wght@400;500;600;700&amp;display=swap" />
   </head>
-  <body class="bg-background text-foreground antialiased selection:bg-accent selection:text-accent-foreground min-h-screen">
-    <div id="root"></div>
+  <body class="bg-background text-foreground antialiased selection:bg-accent selection:text-accent-foreground min-h-screen" style="background-color: #0f0e17; color: #fffffe;">
+    <div id="root">
+      <div style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; background-color: #0f0e17; color: #fffffe; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+        <div style="width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #3b82f6, #8b5cf6); display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 25px -5px rgba(59, 130, 246, 0.4); margin-bottom: 16px;">
+          <span style="font-weight: 700; font-size: 16px; color: #ffffff; letter-spacing: -0.5px;">NG</span>
+        </div>
+        <div style="font-size: 14px; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: #a7a9be; margin-bottom: 8px;">NIFTYGRAPHY</div>
+        <div style="width: 120px; height: 2px; background: rgba(255, 255, 255, 0.1); border-radius: 9999px; overflow: hidden; position: relative;">
+          <div style="width: 50%; height: 100%; background: linear-gradient(90deg, #3b82f6, #8b5cf6); border-radius: 9999px; animation: ngPulse 1.2s infinite ease-in-out;"></div>
+        </div>
+        <style>
+          @keyframes ngPulse {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(250%); }
+          }
+        </style>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

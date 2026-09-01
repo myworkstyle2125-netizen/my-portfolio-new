@@ -25,8 +25,45 @@ type RouteState =
   | { type: 'category'; categorySlug: string }
   | { type: 'project'; categorySlug?: string; projectSlug: string };
 
+function getInitialRoute(): RouteState {
+  if (typeof window === 'undefined') return { type: 'public' };
+  try {
+    const path = window.location.pathname.toLowerCase().replace(/\/$/, '');
+    const hash = window.location.hash.toLowerCase().replace(/^#\/?/, '');
+    const effectivePath = hash ? `/${hash}` : path || '/';
+
+    if (effectivePath === '/owner-login' || path === '/owner-login' || hash === 'owner-login') {
+      return { type: 'login' };
+    }
+    if (effectivePath === '/admin' || path === '/admin' || hash === 'admin' || hash === 'dashboard') {
+      return { type: 'admin' };
+    }
+    const projectMatch =
+      effectivePath.match(/^\/works\/([a-z0-9-]+)\/([a-z0-9-]+)$/) ||
+      path.match(/^\/works\/([a-z0-9-]+)\/([a-z0-9-]+)$/);
+    if (projectMatch) {
+      return { type: 'project', categorySlug: projectMatch[1], projectSlug: projectMatch[2] };
+    }
+    const directProjectMatch =
+      effectivePath.match(/^\/project\/([a-z0-9-]+)$/) ||
+      path.match(/^\/project\/([a-z0-9-]+)$/);
+    if (directProjectMatch) {
+      return { type: 'project', projectSlug: directProjectMatch[1] };
+    }
+    const categoryMatch =
+      effectivePath.match(/^\/works\/([a-z0-9-]+)$/) ||
+      path.match(/^\/works\/([a-z0-9-]+)$/);
+    if (categoryMatch) {
+      return { type: 'category', categorySlug: categoryMatch[1] };
+    }
+  } catch (err) {
+    console.error('Error determining initial route:', err);
+  }
+  return { type: 'public' };
+}
+
 export default function App() {
-  const [currentRoute, setCurrentRoute] = useState<RouteState>({ type: 'public' });
+  const [currentRoute, setCurrentRoute] = useState<RouteState>(getInitialRoute);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [authChecking, setAuthChecking] = useState(true);
 
@@ -37,7 +74,8 @@ export default function App() {
       const isAuth = Boolean(res && res.authenticated);
       setIsAuthenticated(isAuth);
       return isAuth;
-    } catch {
+    } catch (err) {
+      console.warn('Auth check error:', err);
       setIsAuthenticated(false);
       return false;
     } finally {
@@ -47,97 +85,102 @@ export default function App() {
 
   // Determine current active route based on window.location
   const resolveRoute = (authStatus: boolean | null) => {
-    let path = window.location.pathname.toLowerCase().replace(/\/$/, '');
-    let hash = window.location.hash.toLowerCase().replace(/^#\/?/, '');
+    try {
+      const path = window.location.pathname.toLowerCase().replace(/\/$/, '');
+      const hash = window.location.hash.toLowerCase().replace(/^#\/?/, '');
+      const effectivePath = hash ? `/${hash}` : path || '/';
 
-    // Check if hash contains route path (e.g. #/works/branding)
-    const effectivePath = hash ? `/${hash}` : path || '/';
+      console.log('[Routing] Resolving path:', { path, hash, effectivePath, authStatus });
 
-    const isLoginPath =
-      effectivePath === '/owner-login' ||
-      path === '/owner-login' ||
-      hash === 'owner-login';
+      const isLoginPath =
+        effectivePath === '/owner-login' ||
+        path === '/owner-login' ||
+        hash === 'owner-login';
 
-    const isAdminPath =
-      effectivePath === '/admin' ||
-      path === '/admin' ||
-      hash === 'admin' ||
-      hash === 'dashboard';
+      const isAdminPath =
+        effectivePath === '/admin' ||
+        path === '/admin' ||
+        hash === 'admin' ||
+        hash === 'dashboard';
 
-    if (isAdminPath) {
-      if (authStatus === false) {
-        if (hash) {
-          window.location.hash = '#/owner-login';
+      if (isAdminPath) {
+        if (authStatus === false) {
+          if (hash) {
+            window.location.hash = '#/owner-login';
+          } else {
+            window.history.replaceState({}, '', '/owner-login');
+          }
+          setCurrentRoute({ type: 'login' });
         } else {
-          window.history.replaceState({}, '', '/owner-login');
+          setCurrentRoute({ type: 'admin' });
         }
-        setCurrentRoute({ type: 'login' });
-      } else {
-        setCurrentRoute({ type: 'admin' });
+        return;
       }
-      return;
-    }
 
-    if (isLoginPath) {
-      if (authStatus === true) {
-        if (hash) {
-          window.location.hash = '#/admin';
+      if (isLoginPath) {
+        if (authStatus === true) {
+          if (hash) {
+            window.location.hash = '#/admin';
+          } else {
+            window.history.replaceState({}, '', '/admin');
+          }
+          setCurrentRoute({ type: 'admin' });
         } else {
-          window.history.replaceState({}, '', '/admin');
+          setCurrentRoute({ type: 'login' });
         }
-        setCurrentRoute({ type: 'admin' });
-      } else {
-        setCurrentRoute({ type: 'login' });
+        return;
       }
-      return;
-    }
 
-    // Check Project Detail Route: /works/:categorySlug/:projectSlug or /project/:projectSlug
-    const projectMatch =
-      effectivePath.match(/^\/works\/([a-z0-9-]+)\/([a-z0-9-]+)$/) ||
-      path.match(/^\/works\/([a-z0-9-]+)\/([a-z0-9-]+)$/);
+      // Check Project Detail Route: /works/:categorySlug/:projectSlug or /project/:projectSlug
+      const projectMatch =
+        effectivePath.match(/^\/works\/([a-z0-9-]+)\/([a-z0-9-]+)$/) ||
+        path.match(/^\/works\/([a-z0-9-]+)\/([a-z0-9-]+)$/);
 
-    if (projectMatch) {
-      setCurrentRoute({
-        type: 'project',
-        categorySlug: projectMatch[1],
-        projectSlug: projectMatch[2],
-      });
-      return;
-    }
-
-    const directProjectMatch =
-      effectivePath.match(/^\/project\/([a-z0-9-]+)$/) ||
-      path.match(/^\/project\/([a-z0-9-]+)$/);
-
-    if (directProjectMatch) {
-      setCurrentRoute({
-        type: 'project',
-        projectSlug: directProjectMatch[1],
-      });
-      return;
-    }
-
-    // Check Category Route: /works/:categorySlug
-    const categoryMatch =
-      effectivePath.match(/^\/works\/([a-z0-9-]+)$/) ||
-      path.match(/^\/works\/([a-z0-9-]+)$/);
-
-    if (categoryMatch) {
-      const slug = categoryMatch[1];
-      // Only recognize if valid category or slug
-      const isKnownCategory = PORTFOLIO_CATEGORIES.some((c) => c.slug === slug);
-      if (isKnownCategory) {
+      if (projectMatch) {
         setCurrentRoute({
-          type: 'category',
-          categorySlug: slug,
+          type: 'project',
+          categorySlug: projectMatch[1],
+          projectSlug: projectMatch[2],
         });
         return;
       }
-    }
 
-    // Default: Public Home View
-    setCurrentRoute({ type: 'public' });
+      const directProjectMatch =
+        effectivePath.match(/^\/project\/([a-z0-9-]+)$/) ||
+        path.match(/^\/project\/([a-z0-9-]+)$/);
+
+      if (directProjectMatch) {
+        setCurrentRoute({
+          type: 'project',
+          projectSlug: directProjectMatch[1],
+        });
+        return;
+      }
+
+      // Check Category Route: /works/:categorySlug
+      const categoryMatch =
+        effectivePath.match(/^\/works\/([a-z0-9-]+)$/) ||
+        path.match(/^\/works\/([a-z0-9-]+)$/);
+
+      if (categoryMatch) {
+        const slug = categoryMatch[1];
+        // Only recognize if valid category or slug
+        const isKnownCategory = PORTFOLIO_CATEGORIES.some((c) => c.slug === slug);
+        if (isKnownCategory) {
+          setCurrentRoute({
+            type: 'category',
+            categorySlug: slug,
+          });
+          return;
+        }
+      }
+
+      // Default: Public Home View
+      setCurrentRoute({ type: 'public' });
+    } catch (err) {
+      console.error('[Routing] Error in resolveRoute:', err);
+      setCurrentRoute({ type: 'public' });
+    }
   };
 
   useEffect(() => {

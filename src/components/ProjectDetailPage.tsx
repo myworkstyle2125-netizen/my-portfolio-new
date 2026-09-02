@@ -1,9 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   ExternalLink,
+  Images,
   Layers,
   Maximize2,
   MessageSquare,
@@ -46,6 +49,7 @@ export function ProjectDetailPage({
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setLoading(true);
+    setActiveImageIndex(0);
 
     apiGetProjects(true)
       .then((data) => {
@@ -78,14 +82,51 @@ export function ProjectDetailPage({
   const prevProject = currentIndex > 0 ? siblingList[currentIndex - 1] : siblingList[siblingList.length - 1];
   const nextProject = currentIndex < siblingList.length - 1 ? siblingList[currentIndex + 1] : siblingList[0];
 
-  const allImages = project
-    ? [
-        project.hero || project.thumbnail,
-        ...(project.gallery || []).filter((img) => img !== (project.hero || project.thumbnail)),
-      ].filter(Boolean)
-    : [];
+  // Comprehensively aggregate ALL stored images without arbitrary limits
+  const allImages = useMemo(() => {
+    if (!project) return [];
+    const list: string[] = [];
+    const seen = new Set<string>();
+
+    const addImg = (url?: string) => {
+      if (!url || typeof url !== 'string' || !url.trim()) return;
+      const clean = url.trim();
+      if (!seen.has(clean)) {
+        seen.add(clean);
+        list.push(clean);
+      }
+    };
+
+    addImg(project.hero);
+    addImg(project.thumbnail);
+    if (Array.isArray(project.gallery)) {
+      for (const g of project.gallery) {
+        addImg(g);
+      }
+    }
+    return list;
+  }, [project]);
 
   const currentImage = allImages[activeImageIndex] || project?.hero || project?.thumbnail || '/assets/work-jck.jpg';
+
+  const handlePrevImage = () => {
+    setActiveImageIndex((prev) => (prev > 0 ? prev - 1 : allImages.length - 1));
+  };
+
+  const handleNextImage = () => {
+    setActiveImageIndex((prev) => (prev < allImages.length - 1 ? prev + 1 : 0));
+  };
+
+  // Keyboard navigation for images across all stored visuals
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (allImages.length <= 1) return;
+      if (e.key === 'ArrowLeft') handlePrevImage();
+      if (e.key === 'ArrowRight') handleNextImage();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [allImages.length]);
 
   const whatsappMessage = encodeURIComponent(
     `Hi Shen, I was looking at your project "${project?.title || 'Design Work'}" (${project?.categoryLabel || project?.category}) on NIFTYGRAPHY and would like to discuss creating something similar for my brand!`
@@ -205,9 +246,41 @@ export function ProjectDetailPage({
         {/* Big Showcase Visual / Gallery Hero */}
         <div className="mt-12 overflow-hidden rounded-3xl border border-border bg-surface/90 shadow-2xl">
           <div className="relative flex min-h-[360px] sm:min-h-[540px] lg:min-h-[640px] items-center justify-center bg-black/50 p-4 sm:p-10">
+            {/* Visual Counter Badge */}
+            {allImages.length > 0 && (
+              <div className="absolute top-4 left-4 z-20 flex items-center gap-1.5 rounded-full bg-background/85 px-3.5 py-1.5 text-xs font-semibold text-foreground backdrop-blur-md border border-border shadow-lg">
+                <Images className="h-3.5 w-3.5 text-accent" />
+                <span>Visual {activeImageIndex + 1} of {allImages.length}</span>
+              </div>
+            )}
+
+            {/* Left / Right Main Visual Arrows */}
+            {allImages.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={handlePrevImage}
+                  title="Previous artwork visual (Left Arrow)"
+                  aria-label="Previous visual"
+                  className="absolute left-3 sm:left-6 top-1/2 -translate-y-1/2 z-20 flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-background/80 hover:bg-background text-foreground border border-border/80 shadow-2xl backdrop-blur-md transition-all hover:scale-110 active:scale-95"
+                >
+                  <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleNextImage}
+                  title="Next artwork visual (Right Arrow)"
+                  aria-label="Next visual"
+                  className="absolute right-3 sm:right-6 top-1/2 -translate-y-1/2 z-20 flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-background/80 hover:bg-background text-foreground border border-border/80 shadow-2xl backdrop-blur-md transition-all hover:scale-110 active:scale-95"
+                >
+                  <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
+                </button>
+              </>
+            )}
+
             <img
               src={currentImage}
-              alt={`${project?.title} — High resolution artwork`}
+              alt={`${project?.title} — Visual ${activeImageIndex + 1} of ${allImages.length}`}
               className={`max-h-[75vh] w-auto max-w-full rounded-2xl object-contain shadow-2xl transition-all duration-300 ${
                 isZoomed ? 'scale-125 cursor-zoom-out' : 'cursor-zoom-in'
               }`}
@@ -215,7 +288,7 @@ export function ProjectDetailPage({
             />
 
             {/* Floating Zoom & Action Controls */}
-            <div className="absolute bottom-4 right-4 flex items-center gap-2 rounded-full bg-background/80 px-3.5 py-1.5 backdrop-blur-md border border-border text-xs text-foreground shadow-lg">
+            <div className="absolute bottom-4 right-4 z-20 flex items-center gap-2 rounded-full bg-background/80 px-3.5 py-1.5 backdrop-blur-md border border-border text-xs text-foreground shadow-lg">
               <button
                 type="button"
                 onClick={() => setIsZoomed(!isZoomed)}
@@ -238,29 +311,48 @@ export function ProjectDetailPage({
             </div>
           </div>
 
-          {/* Multiple Image Gallery Switcher */}
+          {/* Multi-Row Artwork Gallery (Max 10 Images Per Row, Auto-Wrapping for All Images) */}
           {allImages.length > 1 && (
-            <div className="border-t border-border/80 bg-surface/50 px-5 py-4 sm:px-10">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Artwork Gallery ({allImages.length} Views)
-              </p>
-              <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-none">
+            <div className="border-t border-border/80 bg-surface/50 px-4 py-5 sm:px-8">
+              <div className="mb-3.5 flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Artwork Gallery ({allImages.length} Visuals)
+                  </p>
+                  <span className="text-[0.68rem] text-accent font-medium">
+                    • Viewing Visual #{activeImageIndex + 1}
+                  </span>
+                </div>
+                <span className="text-[0.72rem] text-muted-foreground">
+                  Max 10 per row · Click any artwork to view
+                </span>
+              </div>
+
+              {/* Responsive CSS Grid: Max 10 columns on desktop, wrapping automatically to as many rows as needed for ALL images */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-8 xl:grid-cols-10 2xl:grid-cols-10 gap-2.5 sm:gap-3">
                 {allImages.map((img, idx) => (
                   <button
-                    key={`${project?.slug}-thumb-${idx}`}
+                    key={`${project?.slug}-gallery-${idx}`}
                     type="button"
-                    onClick={() => setActiveImageIndex(idx)}
-                    className={`relative h-20 w-32 shrink-0 overflow-hidden rounded-xl border transition-all ${
+                    onClick={() => {
+                      setActiveImageIndex(idx);
+                      setIsZoomed(false);
+                    }}
+                    className={`group relative aspect-[16/11] w-full overflow-hidden rounded-xl border transition-all text-left ${
                       activeImageIndex === idx
-                        ? 'border-accent ring-2 ring-accent/30 scale-105 shadow-md'
-                        : 'border-border opacity-60 hover:opacity-100'
+                        ? 'border-accent ring-2 ring-accent/50 scale-[1.03] shadow-lg'
+                        : 'border-border/80 opacity-75 hover:opacity-100 hover:border-accent/50 hover:scale-[1.02]'
                     }`}
                   >
                     <img
                       src={img}
-                      alt={`View ${idx + 1}`}
-                      className="h-full w-full object-cover"
+                      alt={`Artwork visual ${idx + 1}`}
+                      loading="lazy"
+                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
+                    <span className="absolute bottom-1.5 left-1.5 rounded-md bg-black/75 px-1.5 py-0.5 text-[0.62rem] font-bold text-white backdrop-blur-sm shadow">
+                      #{idx + 1}
+                    </span>
                   </button>
                 ))}
               </div>

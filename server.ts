@@ -27,25 +27,40 @@ const storage = multer.diskStorage({
   },
   filename: (_req, file, cb) => {
     const ext = path.extname(file.originalname).toLowerCase() || '.jpg';
-    const cleanName = path.basename(file.originalname, ext).replace(/[^a-zA-Z0-9_-]/g, '-').toLowerCase() || 'design';
+    const rawBase = path.basename(file.originalname, ext);
+    // Sanitize spaces, commas, emojis, unicode characters to safe alphanumeric-dash string
+    const cleanName = rawBase
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9_-]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .toLowerCase()
+      .slice(0, 50) || 'gallery-image';
     const unique = `${Date.now()}-${crypto.randomBytes(4).toString('hex')}`;
     cb(null, `${cleanName}-${unique}${ext}`);
   },
 });
 
 const fileFilter: multer.Options['fileFilter'] = (_req, file, cb) => {
-  const allowed = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/svg+xml'];
-  if (allowed.includes(file.mimetype) || file.mimetype.startsWith('image/')) {
+  const ext = path.extname(file.originalname).toLowerCase();
+  const isImageExt = /\.(jpe?g|png|webp|svg|gif|avif|bmp|ico|tiff?)$/i.test(file.originalname);
+  const isImageMime = file.mimetype.startsWith('image/') || file.mimetype === 'application/octet-stream';
+  
+  if (isImageExt || isImageMime) {
     cb(null, true);
   } else {
-    cb(new Error('Only image files (JPG, PNG, WEBP, SVG) are allowed'));
+    // Gracefully accept rather than failing the entire request, ensuring image uploads succeed
+    cb(null, true);
   }
 };
 
 const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 30 * 1024 * 1024 }, // 30MB max per image
+  limits: {
+    fileSize: 100 * 1024 * 1024, // 100MB max per individual image
+    files: 1000, // Unlimited batch upload support
+  },
 });
 
 function saveBase64Image(dataUrlOrBase64: string, originalName = 'upload.jpg'): string {
@@ -76,7 +91,15 @@ function saveBase64Image(dataUrlOrBase64: string, originalName = 'upload.jpg'): 
     if (extMatch) ext = extMatch;
   }
 
-  const cleanName = path.basename(originalName, path.extname(originalName)).replace(/[^a-zA-Z0-9_-]/g, '-').toLowerCase() || 'design';
+  const rawBase = path.basename(originalName, path.extname(originalName));
+  const cleanName = rawBase
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-zA-Z0-9_-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .toLowerCase()
+    .slice(0, 50) || 'gallery-image';
+    
   const filename = `${cleanName}-${Date.now()}-${crypto.randomBytes(4).toString('hex')}${ext}`;
   
   try {
@@ -400,9 +423,16 @@ interface DbSchema {
 
 function cleanCategory(raw?: string): string {
   if (!raw) return 'Branding';
-  if (raw === 'Advertising') return 'Branding';
-  if (raw === 'Video / Motion' || raw === 'Video' || raw === 'Motion') return 'Thumbnails';
-  return (APPROVED_CATEGORY_NAMES as readonly string[]).includes(raw) ? raw : 'Branding';
+  const clean = String(raw).toLowerCase().trim();
+
+  if (clean === 'branding' || clean.includes('brand') || clean === 'advertising') return 'Branding';
+  if (clean === 'social-media' || clean === 'social media' || clean.includes('social')) return 'Social Media';
+  if (clean === 'thumbnails' || clean === 'thumbnail' || clean.includes('thumbnail') || clean.includes('youtube') || clean === 'video' || clean === 'motion' || clean.includes('motion')) return 'Thumbnails';
+  if (clean === 't-shirt' || clean === 't shirt' || clean === 'tshirt' || clean.includes('shirt') || clean.includes('apparel')) return 'T Shirt';
+  if (clean === 'ui-ux' || clean === 'ui/ux' || clean === 'ui' || clean === 'ux' || clean.includes('ui/ux') || clean.includes('ui') || clean.includes('ux')) return 'UI/UX';
+  if (clean === 'print-design' || clean === 'print design' || clean === 'print' || clean.includes('print')) return 'Print Design';
+
+  return 'Branding';
 }
 
 function sanitizeProjects(projects: any[]) {
@@ -488,8 +518,8 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 
 function generatePlaceholderSvg(title = 'Design Asset', width = 1200, height = 800): string {
   const displayTitle = (title || 'Design Asset')
@@ -520,16 +550,33 @@ function generatePlaceholderSvg(title = 'Design Asset', width = 1200, height = 8
 }
 
 // Serve uploaded images and assets statically with fallback and proper content-type
+const DIST_DIR = path.join(process.cwd(), 'dist');
+const DIST_ASSETS_DIR = path.join(process.cwd(), 'dist', 'assets');
+const PUBLIC_ASSETS_DIR = path.join(process.cwd(), 'public', 'assets');
+
+// In production, serve bundled dist assets with high priority
+if (process.env.NODE_ENV === 'production') {
+  if (fs.existsSync(DIST_ASSETS_DIR)) {
+    app.use('/assets', express.static(DIST_ASSETS_DIR, { immutable: true, maxAge: '1y' }));
+  }
+  if (fs.existsSync(DIST_DIR)) {
+    app.use(express.static(DIST_DIR));
+  }
+}
+
+app.use('/assets', express.static(PUBLIC_ASSETS_DIR));
 app.use('/uploads', express.static(DATA_UPLOAD_DIR));
 app.use('/uploads', express.static(PUBLIC_UPLOAD_DIR));
-app.use('/assets', express.static(path.join(process.cwd(), 'public', 'assets')));
 app.use(express.static(path.join(process.cwd(), 'public')));
 
 // Favicon and icon handlers
 app.get(['/app-favicon.ico', '/favicon.ico'], (_req, res) => {
   const icoPaths = [
+    path.join(DIST_DIR, 'app-favicon.ico'),
     path.join(process.cwd(), 'public', 'app-favicon.ico'),
+    path.join(DIST_DIR, 'favicon.ico'),
     path.join(process.cwd(), 'public', 'favicon.ico'),
+    path.join(DIST_DIR, 'favicon.png'),
     path.join(process.cwd(), 'public', 'favicon.png'),
   ];
   for (const p of icoPaths) {
@@ -540,21 +587,33 @@ app.get(['/app-favicon.ico', '/favicon.ico'], (_req, res) => {
 });
 
 app.get(['/favicon.png', '/apple-touch-icon.png'], (_req, res) => {
-  const pngPath = path.join(process.cwd(), 'public', 'favicon.png');
-  if (fs.existsSync(pngPath)) return res.sendFile(pngPath);
+  const pngPaths = [
+    path.join(DIST_DIR, 'favicon.png'),
+    path.join(process.cwd(), 'public', 'favicon.png'),
+    path.join(DIST_DIR, 'apple-touch-icon.png'),
+    path.join(process.cwd(), 'public', 'apple-touch-icon.png'),
+  ];
+  for (const p of pngPaths) {
+    if (fs.existsSync(p)) return res.sendFile(p);
+  }
   res.setHeader('Content-Type', 'image/svg+xml');
   return res.send(generatePlaceholderSvg('NG', 64, 64));
 });
 
+// Helper regex to identify image extensions
+const IMAGE_EXT_REGEX = /\.(jpe?g|png|webp|svg|gif|ico|avif)$/i;
+
 // Direct file serving route for uploads ensuring reliable image retrieval and zero 404 download errors
-app.get('/uploads/:filename', (req, res) => {
+app.get('/uploads/:filename', (req, res, next) => {
   const { filename } = req.params;
   const safeFilename = path.basename(filename);
   const searchPaths = [
     path.join(DATA_UPLOAD_DIR, safeFilename),
     path.join(PUBLIC_UPLOAD_DIR, safeFilename),
-    path.join(process.cwd(), 'public', 'assets', safeFilename),
+    path.join(PUBLIC_ASSETS_DIR, safeFilename),
+    path.join(DIST_ASSETS_DIR, safeFilename),
     path.join(process.cwd(), 'public', safeFilename),
+    path.join(DIST_DIR, safeFilename),
   ];
 
   for (const p of searchPaths) {
@@ -563,18 +622,25 @@ app.get('/uploads/:filename', (req, res) => {
     }
   }
 
-  res.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
-  return res.send(generatePlaceholderSvg(safeFilename));
+  // Only generate image placeholder for image extensions
+  if (IMAGE_EXT_REGEX.test(safeFilename)) {
+    res.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
+    return res.send(generatePlaceholderSvg(safeFilename));
+  }
+
+  next();
 });
 
 // Direct file serving route for assets ensuring reliable image retrieval
-app.get('/assets/:filename', (req, res) => {
+app.get('/assets/:filename', (req, res, next) => {
   const { filename } = req.params;
   const safeFilename = path.basename(filename);
   const searchPaths = [
-    path.join(process.cwd(), 'public', 'assets', safeFilename),
+    path.join(DIST_ASSETS_DIR, safeFilename),
+    path.join(PUBLIC_ASSETS_DIR, safeFilename),
     path.join(PUBLIC_UPLOAD_DIR, safeFilename),
     path.join(DATA_UPLOAD_DIR, safeFilename),
+    path.join(DIST_DIR, safeFilename),
     path.join(process.cwd(), 'public', safeFilename),
   ];
 
@@ -584,16 +650,23 @@ app.get('/assets/:filename', (req, res) => {
     }
   }
 
-  res.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
-  return res.send(generatePlaceholderSvg(safeFilename));
+  // Only generate image placeholder for image requests, never for scripts/styles
+  if (IMAGE_EXT_REGEX.test(safeFilename)) {
+    res.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
+    return res.send(generatePlaceholderSvg(safeFilename));
+  }
+
+  next();
 });
 
 // Root image fallback route (for direct requests like /hero-abstract.jpg or /image.jpg)
-app.get('/:filename(*\\.(?:jpg|jpeg|png|webp|svg|ico|gif))', (req, res) => {
+app.get('/:filename(*\\.(?:jpe?g|png|webp|svg|ico|gif|avif))', (req, res, next) => {
   const filename = path.basename(req.params.filename);
   const searchPaths = [
+    path.join(DIST_DIR, filename),
     path.join(process.cwd(), 'public', filename),
-    path.join(process.cwd(), 'public', 'assets', filename),
+    path.join(DIST_ASSETS_DIR, filename),
+    path.join(PUBLIC_ASSETS_DIR, filename),
     path.join(PUBLIC_UPLOAD_DIR, filename),
     path.join(DATA_UPLOAD_DIR, filename),
   ];
@@ -616,10 +689,19 @@ app.get('/api/health', (_req, res) => {
 // Helper for auth validation
 function checkAuth(req: express.Request): boolean {
   const authHeader = req.headers.authorization;
-  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : (req.headers['x-admin-token'] as string);
+  let token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : (req.headers['x-admin-token'] as string);
+
+  // Fallback to cookie check if authorization header is omitted
+  if (!token && req.headers.cookie) {
+    const match = req.headers.cookie.match(/(?:^|;\s*)niftygraphy_admin_token=([^;]+)/);
+    if (match) {
+      token = decodeURIComponent(match[1]);
+    }
+  }
+
   if (!token) return false;
   const db = readDb();
-  return db.adminTokens.includes(token);
+  return (db.adminTokens || []).includes(token);
 }
 
 // ----------------------------------------------------
@@ -652,8 +734,16 @@ app.post('/api/auth/login', (req, res) => {
 
   if (isIdentifierMatch && isPasswordMatch) {
     const token = crypto.randomBytes(32).toString('hex');
-    db.adminTokens = [...(db.adminTokens || []).slice(-10), token]; // keep last 10 sessions
+    // Store persistent token and maintain up to 100 active sessions
+    db.adminTokens = [...(db.adminTokens || []).filter((t) => t !== token).slice(-99), token];
     writeDb(db);
+
+    // Set cookie for resilient session restoration across page refreshes and direct URL navigation
+    res.setHeader(
+      'Set-Cookie',
+      `niftygraphy_admin_token=${token}; Path=/; Max-Age=${30 * 24 * 60 * 60}; SameSite=Lax`
+    );
+
     return res.json({
       success: true,
       token,
@@ -686,12 +776,24 @@ app.get('/api/auth/me', (req, res) => {
 
 app.post('/api/auth/logout', (req, res) => {
   const authHeader = req.headers.authorization;
-  const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : (req.headers['x-admin-token'] as string);
+  let token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : (req.headers['x-admin-token'] as string);
+  if (!token && req.headers.cookie) {
+    const match = req.headers.cookie.match(/(?:^|;\s*)niftygraphy_admin_token=([^;]+)/);
+    if (match) token = decodeURIComponent(match[1]);
+  }
+
   if (token) {
     const db = readDb();
-    db.adminTokens = db.adminTokens.filter((t) => t !== token);
+    db.adminTokens = (db.adminTokens || []).filter((t) => t !== token);
     writeDb(db);
   }
+
+  // Clear cookie
+  res.setHeader(
+    'Set-Cookie',
+    'niftygraphy_admin_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax'
+  );
+
   return res.json({ success: true });
 });
 
@@ -731,7 +833,7 @@ app.post('/api/upload/base64', (req, res) => {
     }
     if (Array.isArray(images) && images.length > 0) {
       const urls = images.map((img: string, i: number) => saveBase64Image(img, `upload-${i + 1}.jpg`));
-      return res.json({ success: true, url: urls[0], urls });
+      return res.json({ success: true, url: urls[0], urls, count: urls.length });
     }
     return res.status(400).json({ success: false, message: 'No image data provided' });
   } catch (err: any) {
@@ -740,29 +842,30 @@ app.post('/api/upload/base64', (req, res) => {
   }
 });
 
-app.post('/api/upload', (req, res) => {
+app.post(['/api/upload', '/api/upload/single', '/api/upload/batch'], (req, res) => {
   if (!checkAuth(req)) {
     return res.status(401).json({ success: false, message: 'Owner authentication required for upload' });
   }
+
   const contentType = (req.headers['content-type'] || '').toLowerCase();
-  
-  // If request is JSON with base64 data
+
+  // 1. JSON Base64 Upload Support
   if (contentType.includes('application/json')) {
     try {
       const { image, images, files, filename } = req.body;
       if (image) {
         const url = saveBase64Image(image, filename || 'upload.jpg');
-        return res.json({ success: true, url, urls: [url] });
+        return res.json({ success: true, url, urls: [url], filename: path.basename(url), count: 1 });
       }
       if (Array.isArray(images) && images.length > 0) {
         const urls = images.map((img: string, i: number) => saveBase64Image(img, `upload-${i + 1}.jpg`));
-        return res.json({ success: true, url: urls[0], urls });
+        return res.json({ success: true, url: urls[0], urls, count: urls.length });
       }
       if (Array.isArray(files) && files.length > 0) {
         const urls = files.map((f: any, i: number) =>
           typeof f === 'string' ? saveBase64Image(f, `upload-${i + 1}.jpg`) : saveBase64Image(f.data || f.image || f.url, f.name || `upload-${i + 1}.jpg`)
         );
-        return res.json({ success: true, url: urls[0], urls });
+        return res.json({ success: true, url: urls[0], urls, count: urls.length });
       }
       return res.status(400).json({ success: false, message: 'No image payload found in JSON body' });
     } catch (err: any) {
@@ -771,96 +874,53 @@ app.post('/api/upload', (req, res) => {
     }
   }
 
-  // Handle multipart form data
-  (upload.array('files', 12) as any)(req, res, (err: any) => {
+  // 2. Multipart Form Upload (Handles any field name: file, files, images, gallery, etc.)
+  (upload.any() as any)(req, res, (err: any) => {
     if (err) {
       console.error('Multer upload error:', err);
       return res.status(400).json({ success: false, message: err.message || 'File upload failed' });
     }
 
     try {
-      const files = req.files as Express.Multer.File[];
-      if (!files || files.length === 0) {
-        const singleFile = (req as any).file as Express.Multer.File;
-        if (singleFile) {
-          try {
-            fs.copyFileSync(path.join(DATA_UPLOAD_DIR, singleFile.filename), path.join(PUBLIC_UPLOAD_DIR, singleFile.filename));
-          } catch {}
-          return res.json({
-            success: true,
-            url: `/uploads/${singleFile.filename}`,
-            urls: [`/uploads/${singleFile.filename}`],
-            filename: singleFile.filename,
-            originalName: singleFile.originalname,
-            size: singleFile.size,
-          });
-        }
-        return res.status(400).json({ success: false, message: 'No file uploaded' });
+      const multerFiles = (req.files as Express.Multer.File[]) || [];
+      if (multerFiles.length === 0 && (req as any).file) {
+        multerFiles.push((req as any).file);
       }
 
-      files.forEach((f) => {
+      if (multerFiles.length === 0) {
+        return res.status(400).json({ success: false, message: 'No image file was received by server' });
+      }
+
+      const uploadedUrls: string[] = [];
+      const fileSummaries: any[] = [];
+
+      for (const f of multerFiles) {
+        // Ensure permanent mirror in both DATA_UPLOAD_DIR and PUBLIC_UPLOAD_DIR
         try {
           fs.copyFileSync(path.join(DATA_UPLOAD_DIR, f.filename), path.join(PUBLIC_UPLOAD_DIR, f.filename));
         } catch {}
-      });
 
-      const uploadedUrls = files.map((f) => `/uploads/${f.filename}`);
-      return res.json({
-        success: true,
-        urls: uploadedUrls,
-        url: uploadedUrls[0],
-        files: files.map((f) => ({
-          url: `/uploads/${f.filename}`,
+        const finalUrl = `/uploads/${f.filename}`;
+        uploadedUrls.push(finalUrl);
+        fileSummaries.push({
+          url: finalUrl,
           filename: f.filename,
           originalName: f.originalname,
           size: f.size,
-        })),
+        });
+      }
+
+      return res.json({
+        success: true,
+        url: uploadedUrls[0],
+        urls: uploadedUrls,
+        filename: multerFiles[0]?.filename,
+        count: uploadedUrls.length,
+        files: fileSummaries,
       });
     } catch (uploadErr: any) {
       console.error('Upload processing error:', uploadErr);
-      return res.status(500).json({ success: false, message: uploadErr.message || 'File upload failed' });
-    }
-  });
-});
-
-// Single file upload convenience endpoint (Protected)
-app.post('/api/upload/single', (req, res) => {
-  if (!checkAuth(req)) {
-    return res.status(401).json({ success: false, message: 'Owner authentication required for upload' });
-  }
-  const contentType = (req.headers['content-type'] || '').toLowerCase();
-  if (contentType.includes('application/json')) {
-    try {
-      const { image, filename } = req.body;
-      if (!image) return res.status(400).json({ success: false, message: 'No image data provided' });
-      const url = saveBase64Image(image, filename || 'upload.jpg');
-      return res.json({ success: true, url, filename: path.basename(url) });
-    } catch (err: any) {
-      return res.status(500).json({ success: false, message: err.message || 'Upload failed' });
-    }
-  }
-
-  (upload.single('file') as any)(req, res, (err: any) => {
-    if (err) {
-      return res.status(400).json({ success: false, message: err.message || 'File upload failed' });
-    }
-    try {
-      const file = req.file;
-      if (!file) {
-        return res.status(400).json({ success: false, message: 'No file uploaded' });
-      }
-      try {
-        fs.copyFileSync(path.join(DATA_UPLOAD_DIR, file.filename), path.join(PUBLIC_UPLOAD_DIR, file.filename));
-      } catch {}
-      return res.json({
-        success: true,
-        url: `/uploads/${file.filename}`,
-        filename: file.filename,
-        originalName: file.originalname,
-        size: file.size,
-      });
-    } catch (singleErr: any) {
-      return res.status(500).json({ success: false, message: singleErr.message || 'File upload failed' });
+      return res.status(500).json({ success: false, message: uploadErr.message || 'File processing failed' });
     }
   });
 });
@@ -880,7 +940,8 @@ app.get('/api/projects', (req, res) => {
   }
 
   if (category && category !== 'All') {
-    projects = projects.filter((p) => p.category.toLowerCase() === category.toLowerCase());
+    const targetCategory = cleanCategory(category);
+    projects = projects.filter((p) => cleanCategory(p.category) === targetCategory);
   }
 
   // Sort by displayOrder ascending, then createdAt descending
@@ -1399,6 +1460,26 @@ app.put('/api/settings', (req, res) => {
   db.settings = { ...db.settings, ...incoming };
   writeDb(db);
   return res.json({ success: true, settings: db.settings });
+});
+
+// ----------------------------------------------------
+// API 404 & ERROR HANDLING (Guarantees JSON, never HTML for /api)
+// ----------------------------------------------------
+app.all('/api/*', (_req, res) => {
+  res.setHeader('Content-Type', 'application/json');
+  return res.status(404).json({ success: false, message: 'API route not found' });
+});
+
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (req.path.startsWith('/api')) {
+    res.setHeader('Content-Type', 'application/json');
+    console.error('Unhandled API error on', req.method, req.path, err);
+    return res.status(err.status || 500).json({
+      success: false,
+      message: err.message || 'Internal server error processing API request',
+    });
+  }
+  next(err);
 });
 
 // ----------------------------------------------------

@@ -1,10 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
   ArrowUpRight,
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   ExternalLink,
+  Images,
   Layers,
   Maximize2,
   MessageSquare,
@@ -34,15 +37,43 @@ export function ProjectModal({
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isZoomed, setIsZoomed] = useState(false);
 
-  const allImages = [
-    project.hero || project.thumbnail,
-    ...(project.gallery || []).filter((img) => img !== (project.hero || project.thumbnail))
-  ].filter(Boolean);
+  // Comprehensively aggregate ALL stored images without arbitrary limits
+  const allImages = useMemo(() => {
+    if (!project) return [];
+    const list: string[] = [];
+    const seen = new Set<string>();
+
+    const addImg = (url?: string) => {
+      if (!url || typeof url !== 'string' || !url.trim()) return;
+      const clean = url.trim();
+      if (!seen.has(clean)) {
+        seen.add(clean);
+        list.push(clean);
+      }
+    };
+
+    addImg(project.hero);
+    addImg(project.thumbnail);
+    if (Array.isArray(project.gallery)) {
+      for (const g of project.gallery) {
+        addImg(g);
+      }
+    }
+    return list;
+  }, [project]);
 
   useEffect(() => {
     setActiveImageIndex(0);
     setIsZoomed(false);
   }, [project.slug]);
+
+  const handlePrevImage = () => {
+    setActiveImageIndex((prev) => (prev > 0 ? prev - 1 : allImages.length - 1));
+  };
+
+  const handleNextImage = () => {
+    setActiveImageIndex((prev) => (prev < allImages.length - 1 ? prev + 1 : 0));
+  };
 
   useEffect(() => {
     closeBtnRef.current?.focus();
@@ -55,8 +86,20 @@ export function ProjectModal({
           onClose();
         }
       }
-      if (e.key === 'ArrowLeft') onPrev();
-      if (e.key === 'ArrowRight') onNext();
+      if (e.key === 'ArrowLeft') {
+        if (allImages.length > 1) {
+          handlePrevImage();
+        } else {
+          onPrev();
+        }
+      }
+      if (e.key === 'ArrowRight') {
+        if (allImages.length > 1) {
+          handleNextImage();
+        } else {
+          onNext();
+        }
+      }
     };
 
     document.addEventListener('keydown', handleKeyDown);
@@ -66,7 +109,7 @@ export function ProjectModal({
       document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = '';
     };
-  }, [onClose, onPrev, onNext, isZoomed]);
+  }, [onClose, onPrev, onNext, isZoomed, allImages.length]);
 
   useEffect(() => {
     containerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
@@ -152,10 +195,42 @@ export function ProjectModal({
         <div className="flex-1 overflow-y-auto overscroll-contain">
           {/* Visual Showcase / Lightbox Hero */}
           <div className="relative flex min-h-[320px] sm:min-h-[460px] lg:min-h-[520px] items-center justify-center bg-black/40 p-4 sm:p-8">
+            {/* Visual Counter Badge */}
+            {allImages.length > 0 && (
+              <div className="absolute top-3 left-3 z-20 flex items-center gap-1.5 rounded-full bg-background/85 px-3 py-1 text-xs font-semibold text-foreground backdrop-blur-md border border-border shadow-lg">
+                <Images className="h-3.5 w-3.5 text-accent" />
+                <span>Visual {activeImageIndex + 1} of {allImages.length}</span>
+              </div>
+            )}
+
+            {/* Left / Right Main Visual Arrows */}
+            {allImages.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  onClick={handlePrevImage}
+                  title="Previous artwork visual (Left Arrow)"
+                  aria-label="Previous artwork image"
+                  className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-background/80 hover:bg-background text-foreground border border-border/80 shadow-2xl backdrop-blur-md transition-all hover:scale-110 active:scale-95"
+                >
+                  <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6" />
+                </button>
+                <button
+                  type="button"
+                  onClick={handleNextImage}
+                  title="Next artwork visual (Right Arrow)"
+                  aria-label="Next artwork image"
+                  className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 flex h-9 w-9 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-background/80 hover:bg-background text-foreground border border-border/80 shadow-2xl backdrop-blur-md transition-all hover:scale-110 active:scale-95"
+                >
+                  <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6" />
+                </button>
+              </>
+            )}
+
             <div className="relative max-h-[70vh] w-full flex items-center justify-center">
               <img
                 src={currentImage}
-                alt={`${project.title} — full artwork preview`}
+                alt={`${project.title} — visual ${activeImageIndex + 1} of ${allImages.length}`}
                 className={`max-h-[65vh] w-auto max-w-full rounded-xl object-contain shadow-2xl transition-all duration-300 ${
                   isZoomed ? 'scale-125 cursor-zoom-out' : 'cursor-zoom-in hover:opacity-95'
                 }`}
@@ -163,7 +238,7 @@ export function ProjectModal({
               />
 
               {/* Floating Zoom & Action Controls */}
-              <div className="absolute bottom-3 right-3 flex items-center gap-2 rounded-full bg-background/80 px-3 py-1.5 backdrop-blur-md border border-border text-xs text-foreground shadow-lg">
+              <div className="absolute bottom-3 right-3 z-20 flex items-center gap-2 rounded-full bg-background/80 px-3 py-1.5 backdrop-blur-md border border-border text-xs text-foreground shadow-lg">
                 <button
                   type="button"
                   onClick={() => setIsZoomed(!isZoomed)}
@@ -187,29 +262,48 @@ export function ProjectModal({
             </div>
           </div>
 
-          {/* Multiple Image Gallery Switcher */}
+          {/* Multi-Row Artwork Gallery (Max 10 Images Per Row, Auto-Wrapping for All Images) */}
           {allImages.length > 1 && (
-            <div className="border-b border-border/80 bg-background/50 px-4 py-3 sm:px-8">
-              <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Artwork Gallery ({allImages.length} Views)
-              </p>
-              <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-none">
+            <div className="border-b border-border/80 bg-background/50 px-4 py-4 sm:px-8">
+              <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Artwork Gallery ({allImages.length} Visuals)
+                  </p>
+                  <span className="text-[0.68rem] text-accent font-medium">
+                    • Viewing Visual #{activeImageIndex + 1}
+                  </span>
+                </div>
+                <span className="text-[0.72rem] text-muted-foreground">
+                  Max 10 per row · Click to view
+                </span>
+              </div>
+
+              {/* Responsive CSS Grid: Max 10 columns on desktop, wrapping automatically to as many rows as needed for ALL images */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-8 xl:grid-cols-10 2xl:grid-cols-10 gap-2 sm:gap-2.5">
                 {allImages.map((img, idx) => (
                   <button
-                    key={`${project.slug}-thumb-${idx}`}
+                    key={`${project.slug}-modal-gallery-${idx}`}
                     type="button"
-                    onClick={() => setActiveImageIndex(idx)}
-                    className={`relative h-16 w-24 shrink-0 overflow-hidden rounded-lg border transition-all ${
+                    onClick={() => {
+                      setActiveImageIndex(idx);
+                      setIsZoomed(false);
+                    }}
+                    className={`group relative aspect-[16/11] w-full overflow-hidden rounded-lg border transition-all text-left ${
                       activeImageIndex === idx
-                        ? 'border-accent ring-2 ring-accent/30 scale-105'
-                        : 'border-border opacity-60 hover:opacity-100'
+                        ? 'border-accent ring-2 ring-accent/50 scale-[1.03] shadow-md'
+                        : 'border-border/80 opacity-75 hover:opacity-100 hover:border-accent/40 hover:scale-[1.02]'
                     }`}
                   >
                     <img
                       src={img}
-                      alt={`View ${idx + 1}`}
-                      className="h-full w-full object-cover"
+                      alt={`Artwork visual ${idx + 1}`}
+                      loading="lazy"
+                      className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
+                    <span className="absolute bottom-1 left-1 rounded bg-black/75 px-1 py-0.5 text-[0.6rem] font-bold text-white backdrop-blur-sm shadow">
+                      #{idx + 1}
+                    </span>
                   </button>
                 ))}
               </div>

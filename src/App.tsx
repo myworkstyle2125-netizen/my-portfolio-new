@@ -28,14 +28,28 @@ type RouteState =
 function getInitialRoute(): RouteState {
   if (typeof window === 'undefined') return { type: 'public' };
   try {
-    const path = window.location.pathname.toLowerCase().replace(/\/$/, '');
-    const hash = window.location.hash.toLowerCase().replace(/^#\/?/, '');
+    const path = window.location.pathname.toLowerCase().replace(/\/+$/, '');
+    const hash = window.location.hash.toLowerCase().replace(/^#\/?/, '').replace(/\/+$/, '');
     const effectivePath = hash ? `/${hash}` : path || '/';
 
-    if (effectivePath === '/owner-login' || path === '/owner-login' || hash === 'owner-login') {
+    if (
+      effectivePath === '/owner-login' ||
+      effectivePath.startsWith('/owner-login') ||
+      path === '/owner-login' ||
+      path.startsWith('/owner-login') ||
+      hash === 'owner-login'
+    ) {
       return { type: 'login' };
     }
-    if (effectivePath === '/admin' || path === '/admin' || hash === 'admin' || hash === 'dashboard') {
+    if (
+      effectivePath === '/admin' ||
+      effectivePath.startsWith('/admin') ||
+      path === '/admin' ||
+      path.startsWith('/admin') ||
+      hash === 'admin' ||
+      hash.startsWith('admin') ||
+      hash === 'dashboard'
+    ) {
       return { type: 'admin' };
     }
     const projectMatch =
@@ -86,34 +100,28 @@ export default function App() {
   // Determine current active route based on window.location
   const resolveRoute = (authStatus: boolean | null) => {
     try {
-      const path = window.location.pathname.toLowerCase().replace(/\/$/, '');
-      const hash = window.location.hash.toLowerCase().replace(/^#\/?/, '');
+      const path = window.location.pathname.toLowerCase().replace(/\/+$/, '');
+      const hash = window.location.hash.toLowerCase().replace(/^#\/?/, '').replace(/\/+$/, '');
       const effectivePath = hash ? `/${hash}` : path || '/';
-
-      console.log('[Routing] Resolving path:', { path, hash, effectivePath, authStatus });
 
       const isLoginPath =
         effectivePath === '/owner-login' ||
+        effectivePath.startsWith('/owner-login') ||
         path === '/owner-login' ||
+        path.startsWith('/owner-login') ||
         hash === 'owner-login';
 
       const isAdminPath =
         effectivePath === '/admin' ||
+        effectivePath.startsWith('/admin') ||
         path === '/admin' ||
+        path.startsWith('/admin') ||
         hash === 'admin' ||
+        hash.startsWith('admin') ||
         hash === 'dashboard';
 
       if (isAdminPath) {
-        if (authStatus === false) {
-          if (hash) {
-            window.location.hash = '#/owner-login';
-          } else {
-            window.history.replaceState({}, '', '/owner-login');
-          }
-          setCurrentRoute({ type: 'login' });
-        } else {
-          setCurrentRoute({ type: 'admin' });
-        }
+        setCurrentRoute({ type: 'admin' });
         return;
       }
 

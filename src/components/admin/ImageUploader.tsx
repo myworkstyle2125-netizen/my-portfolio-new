@@ -37,7 +37,8 @@ export function SingleImageUploader({
   }, [value]);
 
   const handleFile = async (file: File) => {
-    if (!file.type.startsWith('image/')) {
+    const isImage = file.type.startsWith('image/') || /\.(jpe?g|png|webp|svg|gif|avif|bmp|ico)$/i.test(file.name);
+    if (!isImage) {
       setError('Please choose a valid image file (JPG, PNG, WEBP, SVG).');
       return;
     }
@@ -261,26 +262,38 @@ export function GalleryUploader({
 }: GalleryUploaderProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ completed: number; total: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleFiles = async (files: FileList | File[]) => {
-    const validFiles = Array.from(files).filter((f) => f.type.startsWith('image/'));
+    const validFiles = Array.from(files).filter(
+      (f) => f.type.startsWith('image/') || /\.(jpe?g|png|webp|svg|gif|avif|bmp|ico)$/i.test(f.name)
+    );
     if (!validFiles.length) {
-      setError('Please select valid image files (JPG, PNG, WEBP).');
+      setError('Please select valid image files (JPG, PNG, WEBP, SVG).');
       return;
     }
     setError(null);
     setUploading(true);
+    setUploadProgress({ completed: 0, total: validFiles.length });
     onUploadingChange?.(true);
+
     try {
-      const urls = await apiUploadFiles(validFiles);
-      onChange([...images, ...urls]);
+      const urls = await apiUploadFiles(validFiles, (completed, total) => {
+        setUploadProgress({ completed, total });
+      });
+
+      if (urls.length > 0) {
+        // Append all uploaded images without removing any existing ones
+        onChange([...images, ...urls]);
+      }
     } catch (err: any) {
       console.error('Gallery upload error:', err);
       setError(err.message || 'Gallery upload failed.');
     } finally {
       setUploading(false);
+      setUploadProgress(null);
       onUploadingChange?.(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -382,7 +395,11 @@ export function GalleryUploader({
         {uploading ? (
           <div className="flex flex-col items-center gap-2 py-3">
             <Loader2 className="h-7 w-7 animate-spin text-accent" />
-            <p className="text-xs font-medium text-foreground">Uploading gallery design files…</p>
+            <p className="text-xs font-medium text-foreground">
+              {uploadProgress
+                ? `Uploading gallery design files (${uploadProgress.completed}/${uploadProgress.total})…`
+                : 'Uploading gallery design files…'}
+            </p>
           </div>
         ) : (
           <div className="flex flex-col items-center gap-1.5 py-2">

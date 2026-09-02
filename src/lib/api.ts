@@ -5,37 +5,71 @@ export const API_BASE = '/api';
 
 const memoryStore: Record<string, string> = {};
 
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const match = document.cookie.match(new RegExp('(?:^|;\\s*)' + name + '=([^;]*)'));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+function setCookie(name: string, value: string, days = 30): void {
+  if (typeof document === 'undefined') return;
+  const expires = new Date(Date.now() + days * 864e5).toUTCString();
+  document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+}
+
+function removeCookie(name: string): void {
+  if (typeof document === 'undefined') return;
+  document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax`;
+}
+
 export const safeStorage = {
   getItem: (key: string): string | null => {
     try {
       if (typeof window !== 'undefined' && window.localStorage) {
-        return window.localStorage.getItem(key);
+        const val = window.localStorage.getItem(key);
+        if (val) return val;
       }
-    } catch (err) {
-      console.warn(`LocalStorage read blocked for key "${key}", using memory fallback.`, err);
-    }
+    } catch {}
+    try {
+      if (typeof window !== 'undefined' && window.sessionStorage) {
+        const val = window.sessionStorage.getItem(key);
+        if (val) return val;
+      }
+    } catch {}
+    const cookieVal = getCookie(key);
+    if (cookieVal) return cookieVal;
     return memoryStore[key] ?? null;
   },
   setItem: (key: string, value: string): void => {
     try {
       if (typeof window !== 'undefined' && window.localStorage) {
         window.localStorage.setItem(key, value);
-        return;
       }
-    } catch (err) {
-      console.warn(`LocalStorage write blocked for key "${key}", using memory fallback.`, err);
-    }
+    } catch {}
+    try {
+      if (typeof window !== 'undefined' && window.sessionStorage) {
+        window.sessionStorage.setItem(key, value);
+      }
+    } catch {}
+    try {
+      setCookie(key, value);
+    } catch {}
     memoryStore[key] = value;
   },
   removeItem: (key: string): void => {
     try {
       if (typeof window !== 'undefined' && window.localStorage) {
         window.localStorage.removeItem(key);
-        return;
       }
-    } catch (err) {
-      console.warn(`LocalStorage delete blocked for key "${key}", using memory fallback.`, err);
-    }
+    } catch {}
+    try {
+      if (typeof window !== 'undefined' && window.sessionStorage) {
+        window.sessionStorage.removeItem(key);
+      }
+    } catch {}
+    try {
+      removeCookie(key);
+    } catch {}
     delete memoryStore[key];
   },
 };
@@ -56,8 +90,33 @@ function getAuthHeaders(): HeadersInit {
   const token = getAdminToken();
   return {
     'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(token ? { Authorization: `Bearer ${token}`, 'x-admin-token': token } : {}),
   };
+}
+
+/**
+ * Safe JSON parser helper that guarantees we never throw
+ * "Unexpected token '<', '<!doctype ...' is not valid JSON".
+ */
+export async function parseResponseJson<T = any>(res: Response, endpoint = 'API'): Promise<T> {
+  const contentType = (res.headers.get('content-type') || '').toLowerCase();
+  if (contentType.includes('application/json')) {
+    try {
+      return await res.json();
+    } catch (err: any) {
+      throw new Error(`Invalid JSON received from ${endpoint}: ${err.message}`);
+    }
+  }
+
+  const rawText = await res.text().catch(() => '');
+  try {
+    return JSON.parse(rawText);
+  } catch {
+    const preview = rawText.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 100);
+    throw new Error(
+      `Server returned HTTP ${res.status} for ${endpoint}: ${preview || (res.ok ? 'OK' : 'Request error')}`
+    );
+  }
 }
 
 // ----------------------------------------------------
@@ -74,7 +133,7 @@ export async function apiLogin(password: string, usernameOrEmail?: string) {
       password,
     }),
   });
-  const data = await res.json();
+  const data = await parseResponseJson(res, 'Login');
   if (!res.ok || !data.success) {
     throw new Error(data.message || 'Login failed');
   }
@@ -84,14 +143,20 @@ export async function apiLogin(password: string, usernameOrEmail?: string) {
 
 export async function apiCheckAuth() {
   const token = getAdminToken();
-  if (!token) return { authenticated: false };
 
   try {
     const res = await fetch(`${API_BASE}/auth/me`, {
       headers: getAuthHeaders(),
+      credentials: 'same-origin',
     });
-    const data = await res.json();
-    return { authenticated: res.ok && data.authenticated, user: data.user };
+    if (!res.ok) {
+      if (token) setAdminToken(null);
+      return { authenticated: false };
+    }
+    const data = await parseResponseJson(res, 'Auth check');
+    const isAuth = Boolean(data && data.authenticated);
+    if (!isAuth && token) setAdminToken(null);
+    return { authenticated: isAuth, user: data?.user };
   } catch {
     return { authenticated: false };
   }
@@ -114,7 +179,7 @@ export async function apiChangePassword(currentPassword: string, newPassword: st
     headers: getAuthHeaders(),
     body: JSON.stringify({ currentPassword, newPassword }),
   });
-  const data = await res.json();
+  const data = await parseResponseJson(res, 'Change password');
   if (!res.ok || !data.success) {
     throw new Error(data.message || 'Failed to update password');
   }
@@ -133,18 +198,17 @@ function fileToBase64(file: File): Promise<string> {
   });
 }
 
-export async function apiUploadFiles(files: File[]): Promise<string[]> {
-  if (!files || files.length === 0) return [];
-
+export async function apiUploadSingle(file: File): Promise<string> {
   const token = getAdminToken();
-  const authHeaders: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {};
+  const authHeaders: Record<string, string> = {
+    ...(token ? { Authorization: `Bearer ${token}`, 'x-admin-token': token } : {}),
+  };
 
-  // Attempt 1: Multipart FormData upload
+  // Attempt 1: Standard multipart FormData upload
   try {
     const formData = new FormData();
-    files.forEach((file) => {
-      formData.append('files', file);
-    });
+    formData.append('file', file, file.name || 'upload.jpg');
+    formData.append('files', file, file.name || 'upload.jpg');
 
     const res = await fetch(`${API_BASE}/upload`, {
       method: 'POST',
@@ -152,20 +216,17 @@ export async function apiUploadFiles(files: File[]): Promise<string[]> {
       body: formData,
     });
 
-    if (res.ok) {
-      const data = await res.json();
-      if (data.success) {
-        if (Array.isArray(data.urls) && data.urls.length > 0) return data.urls;
-        if (data.url) return [data.url];
-      }
+    const data = await parseResponseJson(res, 'Multipart upload');
+    if (res.ok && data.success && (data.url || data.urls?.[0])) {
+      return data.url || data.urls[0];
     }
-  } catch (err) {
-    console.warn('Multipart upload stream error, falling back to base64 encoding:', err);
+  } catch (err: any) {
+    console.warn(`Multipart upload for "${file.name}" encountered issue, attempting base64 pipeline:`, err?.message || err);
   }
 
-  // Attempt 2: Base64 JSON upload (guarantees 100% compatibility in AI Studio preview iframes)
+  // Attempt 2: Base64 JSON upload fallback (guarantees delivery across sandboxed iframes)
   try {
-    const base64Images = await Promise.all(files.map((f) => fileToBase64(f)));
+    const base64 = await fileToBase64(file);
     const res = await fetch(`${API_BASE}/upload/base64`, {
       method: 'POST',
       headers: {
@@ -173,27 +234,64 @@ export async function apiUploadFiles(files: File[]): Promise<string[]> {
         ...authHeaders,
       },
       body: JSON.stringify({
-        images: base64Images,
-        filename: files[0]?.name || 'design-upload.jpg',
+        image: base64,
+        filename: file.name || 'upload.jpg',
       }),
     });
 
-    const data = await res.json();
-    if (res.ok && data.success) {
-      if (Array.isArray(data.urls) && data.urls.length > 0) return data.urls;
-      if (data.url) return [data.url];
+    const data = await parseResponseJson(res, 'Base64 upload');
+    if (res.ok && data.success && (data.url || data.urls?.[0])) {
+      return data.url || data.urls[0];
     }
-    throw new Error(data.message || 'Upload failed');
+    throw new Error(data.message || `Server rejected upload for "${file.name}"`);
   } catch (err: any) {
-    console.error('Upload error:', err);
-    throw new Error(err.message || 'Image upload failed. Please try again.');
+    console.error(`Upload error for "${file.name}":`, err);
+    throw new Error(err.message || `Failed to upload image "${file.name}". Please check the file format and try again.`);
   }
 }
 
-export async function apiUploadSingle(file: File): Promise<string> {
-  const urls = await apiUploadFiles([file]);
-  if (!urls.length) throw new Error('No upload URL returned');
-  return urls[0];
+export async function apiUploadFiles(
+  files: File[],
+  onProgress?: (completed: number, total: number, lastUploadedUrl?: string) => void
+): Promise<string[]> {
+  if (!files || files.length === 0) return [];
+
+  const validFiles = files.filter((f) => f && f.size > 0);
+  if (validFiles.length === 0) return [];
+
+  const successfulUrls: string[] = [];
+  const errors: string[] = [];
+
+  // Controlled concurrency ensures maximum stability without network or memory bottleneck
+  // Reliably supports any number of images (single, batch of 10, 50, 100+)
+  const CONCURRENCY = 2;
+  let currentIndex = 0;
+
+  async function worker() {
+    while (currentIndex < validFiles.length) {
+      const index = currentIndex++;
+      const file = validFiles[index];
+      try {
+        const url = await apiUploadSingle(file);
+        if (url) {
+          successfulUrls.push(url);
+          onProgress?.(successfulUrls.length, validFiles.length, url);
+        }
+      } catch (err: any) {
+        console.error(`Failed uploading file [${file.name}]:`, err);
+        errors.push(`${file.name}: ${err.message || 'Upload error'}`);
+      }
+    }
+  }
+
+  const workers = Array.from({ length: Math.min(CONCURRENCY, validFiles.length) }, () => worker());
+  await Promise.all(workers);
+
+  if (successfulUrls.length === 0 && errors.length > 0) {
+    throw new Error(`Upload failed: ${errors[0]}`);
+  }
+
+  return successfulUrls;
 }
 
 // ----------------------------------------------------
@@ -204,7 +302,7 @@ export async function apiGetProjects(publishedOnly = false): Promise<Project[]> 
   const res = await fetch(`${API_BASE}/projects${query}`, {
     headers: getAuthHeaders(),
   });
-  const data = await res.json();
+  const data = await parseResponseJson(res, 'Get projects');
   if (!res.ok || !data.success) {
     throw new Error(data.message || 'Failed to fetch projects');
   }
@@ -213,7 +311,7 @@ export async function apiGetProjects(publishedOnly = false): Promise<Project[]> 
 
 export async function apiGetProject(idOrSlug: string): Promise<Project> {
   const res = await fetch(`${API_BASE}/projects/${idOrSlug}`);
-  const data = await res.json();
+  const data = await parseResponseJson(res, `Get project ${idOrSlug}`);
   if (!res.ok || !data.success) {
     throw new Error(data.message || 'Project not found');
   }
@@ -226,7 +324,7 @@ export async function apiCreateProject(project: Partial<Project>): Promise<Proje
     headers: getAuthHeaders(),
     body: JSON.stringify(project),
   });
-  const data = await res.json();
+  const data = await parseResponseJson(res, 'Create project');
   if (!res.ok || !data.success) {
     throw new Error(data.message || 'Failed to create project');
   }
@@ -239,7 +337,7 @@ export async function apiUpdateProject(id: string, project: Partial<Project>): P
     headers: getAuthHeaders(),
     body: JSON.stringify(project),
   });
-  const data = await res.json();
+  const data = await parseResponseJson(res, `Update project ${id}`);
   if (!res.ok || !data.success) {
     throw new Error(data.message || 'Failed to update project');
   }
@@ -251,7 +349,7 @@ export async function apiDeleteProject(id: string): Promise<void> {
     method: 'DELETE',
     headers: getAuthHeaders(),
   });
-  const data = await res.json();
+  const data = await parseResponseJson(res, `Delete project ${id}`);
   if (!res.ok || !data.success) {
     throw new Error(data.message || 'Failed to delete project');
   }
@@ -262,7 +360,7 @@ export async function apiDuplicateProject(id: string): Promise<Project> {
     method: 'POST',
     headers: getAuthHeaders(),
   });
-  const data = await res.json();
+  const data = await parseResponseJson(res, `Duplicate project ${id}`);
   if (!res.ok || !data.success) {
     throw new Error(data.message || 'Failed to duplicate project');
   }
@@ -275,7 +373,7 @@ export async function apiTogglePublish(id: string, published: boolean): Promise<
     headers: getAuthHeaders(),
     body: JSON.stringify({ published }),
   });
-  const data = await res.json();
+  const data = await parseResponseJson(res, `Toggle publish ${id}`);
   if (!res.ok || !data.success) {
     throw new Error(data.message || 'Failed to update status');
   }
@@ -288,7 +386,7 @@ export async function apiToggleFeatured(id: string, featured: boolean): Promise<
     headers: getAuthHeaders(),
     body: JSON.stringify({ featured }),
   });
-  const data = await res.json();
+  const data = await parseResponseJson(res, `Toggle featured ${id}`);
   if (!res.ok || !data.success) {
     throw new Error(data.message || 'Failed to update featured flag');
   }
@@ -301,7 +399,7 @@ export async function apiToggleFeatured(id: string, featured: boolean): Promise<
 export async function apiGetCategories(): Promise<Category[]> {
   try {
     const res = await fetch(`${API_BASE}/categories`);
-    const data = await res.json();
+    const data = await parseResponseJson(res, 'Get categories');
     const fetched: Category[] = data.categories || [];
     const valid = fetched.filter((c: Category) =>
       (APPROVED_PROJECT_CATEGORIES as readonly string[]).includes(c.name)
@@ -318,7 +416,7 @@ export async function apiCreateCategory(name: string, description?: string): Pro
     headers: getAuthHeaders(),
     body: JSON.stringify({ name, description }),
   });
-  const data = await res.json();
+  const data = await parseResponseJson(res, 'Create category');
   if (!res.ok || !data.success) {
     throw new Error(data.message || 'Failed to create category');
   }
@@ -331,7 +429,7 @@ export async function apiUpdateCategory(id: string, category: Partial<Category>)
     headers: getAuthHeaders(),
     body: JSON.stringify(category),
   });
-  const data = await res.json();
+  const data = await parseResponseJson(res, `Update category ${id}`);
   if (!res.ok || !data.success) {
     throw new Error(data.message || 'Failed to update category');
   }
@@ -343,7 +441,7 @@ export async function apiDeleteCategory(id: string): Promise<void> {
     method: 'DELETE',
     headers: getAuthHeaders(),
   });
-  const data = await res.json();
+  const data = await parseResponseJson(res, `Delete category ${id}`);
   if (!res.ok || !data.success) {
     throw new Error(data.message || 'Failed to delete category');
   }
@@ -356,7 +454,7 @@ export async function apiGetMessages(): Promise<InquiryMessage[]> {
   const res = await fetch(`${API_BASE}/messages`, {
     headers: getAuthHeaders(),
   });
-  const data = await res.json();
+  const data = await parseResponseJson(res, 'Get messages');
   return data.messages || [];
 }
 
@@ -366,7 +464,7 @@ export async function apiSaveMessage(msg: Partial<InquiryMessage>) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(msg),
   });
-  return res.json();
+  return parseResponseJson(res, 'Save message');
 }
 
 export async function apiMarkMessageRead(id: string) {
@@ -374,7 +472,7 @@ export async function apiMarkMessageRead(id: string) {
     method: 'PATCH',
     headers: getAuthHeaders(),
   });
-  return res.json();
+  return parseResponseJson(res, 'Mark message read');
 }
 
 export async function apiDeleteMessage(id: string) {
@@ -382,7 +480,7 @@ export async function apiDeleteMessage(id: string) {
     method: 'DELETE',
     headers: getAuthHeaders(),
   });
-  return res.json();
+  return parseResponseJson(res, 'Delete message');
 }
 
 // ----------------------------------------------------
@@ -415,7 +513,7 @@ export async function apiGetTestimonials(all = false): Promise<Testimonial[]> {
     const res = await fetch(`${API_BASE}/testimonials${query}`, {
       headers: getAuthHeaders(),
     });
-    const data = await res.json();
+    const data = await parseResponseJson(res, 'Get testimonials');
     if (res.ok && Array.isArray(data.testimonials)) {
       return data.testimonials;
     }
@@ -455,7 +553,7 @@ export async function apiSubmitTestimonial(payload: Partial<Testimonial>): Promi
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
-    const data = await res.json();
+    const data = await parseResponseJson(res, 'Submit testimonial');
     if (res.ok && data.success && data.testimonial) {
       saveLocalTestimonial(data.testimonial);
       return data.testimonial;
@@ -473,7 +571,7 @@ export async function apiUpdateTestimonialStatus(id: string, status: 'approved' 
     headers: getAuthHeaders(),
     body: JSON.stringify({ status }),
   });
-  return res.json();
+  return parseResponseJson(res, 'Update testimonial status');
 }
 
 export async function apiDeleteTestimonial(id: string) {
@@ -486,7 +584,7 @@ export async function apiDeleteTestimonial(id: string) {
     const current = getLocalTestimonials();
     safeStorage.setItem(LOCAL_TESTIMONIALS_KEY, JSON.stringify(current.filter((t) => t.id !== id)));
   } catch {}
-  return res.json();
+  return parseResponseJson(res, 'Delete testimonial');
 }
 
 // ----------------------------------------------------
@@ -494,13 +592,13 @@ export async function apiDeleteTestimonial(id: string) {
 // ----------------------------------------------------
 export async function apiGetPackages(): Promise<PackageItem[]> {
   const res = await fetch(`${API_BASE}/packages`);
-  const data = await res.json();
+  const data = await parseResponseJson(res, 'Get packages');
   return data.packages || [];
 }
 
 export async function apiGetSettings() {
   const res = await fetch(`${API_BASE}/settings`);
-  const data = await res.json();
+  const data = await parseResponseJson(res, 'Get settings');
   return data.settings || {};
 }
 
@@ -510,5 +608,5 @@ export async function apiUpdateSettings(settings: any) {
     headers: getAuthHeaders(),
     body: JSON.stringify(settings),
   });
-  return res.json();
+  return parseResponseJson(res, 'Update settings');
 }

@@ -878,6 +878,9 @@ app.post(['/api/upload', '/api/upload/single', '/api/upload/batch'], (req, res) 
   (upload.any() as any)(req, res, (err: any) => {
     if (err) {
       console.error('Multer upload error:', err);
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(413).json({ success: false, message: 'File is too large for upload (exceeds server limit)' });
+      }
       return res.status(400).json({ success: false, message: err.message || 'File upload failed' });
     }
 
@@ -1489,11 +1492,17 @@ async function startServer() {
   const server = http.createServer(app);
 
   if (process.env.NODE_ENV !== 'production') {
-    const isHmrDisabled = process.env.DISABLE_HMR === 'true';
+    const isHttps = Boolean(process.env.APP_URL && process.env.APP_URL.startsWith('https'));
+    const clientPort = isHttps ? 443 : 3000;
+
     const vite = await createViteServer({
       server: {
         middlewareMode: true,
-        hmr: isHmrDisabled ? false : { server },
+        hmr: {
+          server,
+          clientPort,
+          protocol: isHttps ? 'wss' : 'ws',
+        },
       },
       appType: 'spa',
     });

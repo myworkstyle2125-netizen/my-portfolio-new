@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Check, Image as ImageIcon, Loader2, RefreshCw, Trash2, UploadCloud, Link as LinkIcon } from 'lucide-react';
 import { apiUploadFiles, apiUploadSingle } from '../../lib/api';
+import { validateImageFile } from '../../lib/imageUtils';
 
 interface SingleImageUploaderProps {
   label: string;
@@ -37,9 +38,9 @@ export function SingleImageUploader({
   }, [value]);
 
   const handleFile = async (file: File) => {
-    const isImage = file.type.startsWith('image/') || /\.(jpe?g|png|webp|svg|gif|avif|bmp|ico)$/i.test(file.name);
-    if (!isImage) {
-      setError('Please choose a valid image file (JPG, PNG, WEBP, SVG).');
+    const validation = validateImageFile(file);
+    if (!validation.valid) {
+      setError(validation.error || 'Please choose a valid image file (JPG, PNG, WEBP, SVG).');
       return;
     }
 
@@ -267,14 +268,22 @@ export function GalleryUploader({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleFiles = async (files: FileList | File[]) => {
-    const validFiles = Array.from(files).filter(
-      (f) => f.type.startsWith('image/') || /\.(jpe?g|png|webp|svg|gif|avif|bmp|ico)$/i.test(f.name)
-    );
+    const rawFiles = Array.from(files);
+    const validFiles = rawFiles.filter((f) => validateImageFile(f).valid);
+    const invalidFiles = rawFiles.filter((f) => !validateImageFile(f).valid);
+
     if (!validFiles.length) {
-      setError('Please select valid image files (JPG, PNG, WEBP, SVG).');
+      const firstError = invalidFiles[0] ? validateImageFile(invalidFiles[0]).error : null;
+      setError(firstError || 'Please select valid image files (JPG, PNG, WEBP, SVG).');
       return;
     }
-    setError(null);
+
+    if (invalidFiles.length > 0) {
+      setError(`Skipped ${invalidFiles.length} file(s) that were not valid image formats.`);
+    } else {
+      setError(null);
+    }
+
     setUploading(true);
     setUploadProgress({ completed: 0, total: validFiles.length });
     onUploadingChange?.(true);
@@ -287,6 +296,9 @@ export function GalleryUploader({
       if (urls.length > 0) {
         // Append all uploaded images without removing any existing ones
         onChange([...images, ...urls]);
+        if (urls.length < validFiles.length) {
+          setError(`Uploaded ${urls.length} of ${validFiles.length} images. Some files encountered errors and were skipped.`);
+        }
       }
     } catch (err: any) {
       console.error('Gallery upload error:', err);

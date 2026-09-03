@@ -1,5 +1,6 @@
 import { Category, InquiryMessage, PackageItem, Project, Testimonial } from '../types';
 import { APPROVED_CATEGORY_ITEMS, APPROVED_PROJECT_CATEGORIES } from '../data/siteData';
+import { validateImageFile, compressImageIfNeeded } from './imageUtils';
 
 export const API_BASE = '/api';
 
@@ -100,15 +101,43 @@ function getAuthHeaders(): HeadersInit {
  */
 export async function parseResponseJson<T = any>(res: Response, endpoint = 'API'): Promise<T> {
   const contentType = (res.headers.get('content-type') || '').toLowerCase();
+
+  // Explicit check for HTTP 413 Payload Too Large
+  if (res.status === 413) {
+    throw new Error(
+      `File or request entity is too large (HTTP 413). Upload cannot exceed server/proxy size limits.`
+    );
+  }
+
+  // Detect HTML response early
+  const isHtml = contentType.includes('text/html');
+
   if (contentType.includes('application/json')) {
     try {
-      return await res.json();
+      const data = await res.json();
+      return data;
     } catch (err: any) {
       throw new Error(`Invalid JSON received from ${endpoint}: ${err.message}`);
     }
   }
 
   const rawText = await res.text().catch(() => '');
+
+  // Detect HTML responses (e.g. proxy cookie-checks, session redirects, or SPA fallbacks)
+  if (isHtml || /^\s*<!doctype|^\s*<html|<title>.*<\/title>|cookie check/i.test(rawText)) {
+    const isCookieCheck = /cookie check/i.test(rawText);
+    if (isCookieCheck) {
+      throw new Error(
+        `Server returned a cookie/proxy verification check instead of JSON for ${endpoint}. Please refresh and verify your session.`
+      );
+    }
+    const titleMatch = rawText.match(/<title>([^<]+)<\/title>/i);
+    const title = titleMatch ? titleMatch[1].trim() : '';
+    throw new Error(
+      `Server proxy returned an HTML page (${title || 'HTTP ' + res.status}) instead of expected JSON for ${endpoint}.`
+    );
+  }
+
   try {
     return JSON.parse(rawText);
   } catch {
@@ -199,20 +228,36 @@ function fileToBase64(file: File): Promise<string> {
 }
 
 export async function apiUploadSingle(file: File): Promise<string> {
+  // 1. Validate file format and size
+  const validation = validateImageFile(file);
+  if (!validation.valid) {
+    throw new Error(validation.error || 'Invalid image file.');
+  }
+
   const token = getAdminToken();
   const authHeaders: Record<string, string> = {
     ...(token ? { Authorization: `Bearer ${token}`, 'x-admin-token': token } : {}),
   };
 
-  // Attempt 1: Standard multipart FormData upload
+  // 2. Pre-compress/resize image on client to prevent HTTP 413 and ensure fast, reliable upload
+  let processedFile = file;
+  try {
+    processedFile = await compressImageIfNeeded(file);
+  } catch (compErr) {
+    console.warn(`[ImageUpload] Client compression skipped for "${file.name}":`, compErr);
+    processedFile = file;
+  }
+
+  // 3. Attempt standard multipart/form-data upload
+  let multipartError: Error | null = null;
   try {
     const formData = new FormData();
-    formData.append('file', file, file.name || 'upload.jpg');
-    formData.append('files', file, file.name || 'upload.jpg');
+    formData.append('file', processedFile, processedFile.name || 'upload.jpg');
 
     const res = await fetch(`${API_BASE}/upload`, {
       method: 'POST',
       headers: authHeaders,
+      credentials: 'same-origin',
       body: formData,
     });
 
@@ -220,34 +265,50 @@ export async function apiUploadSingle(file: File): Promise<string> {
     if (res.ok && data.success && (data.url || data.urls?.[0])) {
       return data.url || data.urls[0];
     }
-  } catch (err: any) {
-    console.warn(`Multipart upload for "${file.name}" encountered issue, attempting base64 pipeline:`, err?.message || err);
-  }
-
-  // Attempt 2: Base64 JSON upload fallback (guarantees delivery across sandboxed iframes)
-  try {
-    const base64 = await fileToBase64(file);
-    const res = await fetch(`${API_BASE}/upload/base64`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...authHeaders,
-      },
-      body: JSON.stringify({
-        image: base64,
-        filename: file.name || 'upload.jpg',
-      }),
-    });
-
-    const data = await parseResponseJson(res, 'Base64 upload');
-    if (res.ok && data.success && (data.url || data.urls?.[0])) {
-      return data.url || data.urls[0];
+    if (data && data.message) {
+      throw new Error(data.message);
     }
-    throw new Error(data.message || `Server rejected upload for "${file.name}"`);
   } catch (err: any) {
-    console.error(`Upload error for "${file.name}":`, err);
-    throw new Error(err.message || `Failed to upload image "${file.name}". Please check the file format and try again.`);
+    multipartError = err;
+    console.warn(`Multipart upload for "${file.name}" encountered issue:`, err?.message || err);
   }
+
+  // 4. Fallback: Base64 JSON upload ONLY for small files (< 1.5MB) where multipart had an iframe/proxy transport issue
+  // NEVER convert large files to Base64, as that expands payload size by 33% and triggers HTTP 413
+  const isTooLargeForBase64 = processedFile.size > 1.5 * 1024 * 1024;
+  const is413Error = multipartError && multipartError.message.includes('413');
+
+  if (!isTooLargeForBase64 && !is413Error) {
+    try {
+      const base64 = await fileToBase64(processedFile);
+      const res = await fetch(`${API_BASE}/upload/base64`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...authHeaders,
+        },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+          image: base64,
+          filename: processedFile.name || 'upload.jpg',
+        }),
+      });
+
+      const data = await parseResponseJson(res, 'Base64 upload');
+      if (res.ok && data.success && (data.url || data.urls?.[0])) {
+        return data.url || data.urls[0];
+      }
+      if (data && data.message) {
+        throw new Error(data.message);
+      }
+    } catch (fallbackErr: any) {
+      console.error(`Base64 fallback failed for "${file.name}":`, fallbackErr);
+    }
+  }
+
+  const finalMessage =
+    multipartError?.message || `Failed to upload image "${file.name}". Please check the file format and try again.`;
+  throw new Error(finalMessage);
 }
 
 export async function apiUploadFiles(

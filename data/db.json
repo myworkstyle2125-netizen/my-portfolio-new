@@ -285,6 +285,14 @@
       "description": "Posters, flyers, business cards, and stationery",
       "displayOrder": 6,
       "published": true
+    },
+    {
+      "id": "cat-7",
+      "name": "Other",
+      "slug": "other",
+      "description": "Custom creative projects, illustration, and bespoke design solutions",
+      "displayOrder": 7,
+      "published": true
     }
   ],
   "packages": [
@@ -450,6 +458,7 @@
   "adminTokens": [
     "0643588744713e172cf3d0eac28d395ccb946e60ac4243c02ad792dde2883c89",
     "703255a577ea4b1c391a8cedb600650a1910d495a9cdd7cad186aa3d11a92eeb",
-    "b392cac4256e842be0e83b929d873c1e4809523984ab40ba5e208eba8c932686"
+    "b392cac4256e842be0e83b929d873c1e4809523984ab40ba5e208eba8c932686",
+    "5a6be9c134337803d12be5d04a100d87d85f395a1d558d555f432c578dd10f4c"
   ]
 }

@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   AlertCircle,
   CheckCircle2,
@@ -35,6 +35,8 @@ interface ProjectsManagerProps {
   categories: Category[];
   onRefresh: () => void;
   onRefreshCategories: () => void;
+  initialStatusFilter?: 'all' | 'published' | 'draft' | 'featured';
+  onNavigateToUpload?: () => void;
 }
 
 export function ProjectsManager({
@@ -42,10 +44,18 @@ export function ProjectsManager({
   categories,
   onRefresh,
   onRefreshCategories,
+  initialStatusFilter = 'all',
+  onNavigateToUpload,
 }: ProjectsManagerProps) {
   const [search, setSearch] = useState('');
   const [selectedCat, setSelectedCat] = useState('All');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'draft' | 'featured'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'draft' | 'featured'>(initialStatusFilter);
+
+  useEffect(() => {
+    if (initialStatusFilter) {
+      setStatusFilter(initialStatusFilter);
+    }
+  }, [initialStatusFilter]);
 
   const [editingProject, setEditingProject] = useState<Project | null | undefined>(undefined);
   const [previewProject, setPreviewProject] = useState<Project | null>(null);

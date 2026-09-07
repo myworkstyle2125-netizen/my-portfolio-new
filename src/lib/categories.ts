@@ -58,6 +58,14 @@ export const PORTFOLIO_CATEGORIES: CategoryDefinition[] = [
     description: 'Professional flyers, posters, business cards, brochures, and stationery ready for high-resolution print.',
     displayOrder: 6,
   },
+  {
+    id: 'cat-7',
+    name: 'Other',
+    slug: 'other',
+    subtitle: 'Custom & Miscellaneous Design',
+    description: 'Custom creative projects, illustration, signage, and bespoke design solutions.',
+    displayOrder: 7,
+  },
 ];
 
 export const CATEGORY_NAMES = PORTFOLIO_CATEGORIES.map((c) => c.name);
@@ -69,6 +77,7 @@ export const APPROVED_PROJECT_CATEGORIES = [
   'T Shirt',
   'UI/UX',
   'Print Design',
+  'Other',
 ] as const;
 
 /**
@@ -84,6 +93,7 @@ export function toCategorySlug(val?: string): string {
   if (clean === 't-shirt' || clean === 't shirt' || clean === 'tshirt' || clean.includes('shirt') || clean.includes('apparel')) return 't-shirt';
   if (clean === 'ui-ux' || clean === 'ui/ux' || clean === 'ui' || clean === 'ux' || clean.includes('ui/ux')) return 'ui-ux';
   if (clean === 'print-design' || clean === 'print design' || clean === 'print' || clean.includes('print')) return 'print-design';
+  if (clean === 'other' || clean.includes('other') || clean === 'custom' || clean === 'misc' || clean.includes('miscellaneous')) return 'other';
 
   return 'branding';
 }

@@ -96,6 +96,7 @@ export const APPROVED_CATEGORY_ITEMS: Category[] = [
   { id: 'cat-4', name: 'T Shirt', slug: 't-shirt', description: 'Apparel graphic design, merchandise, and vector artwork', displayOrder: 4, published: true },
   { id: 'cat-5', name: 'UI/UX', slug: 'ui-ux', description: 'Web design, mobile interfaces, and digital experiences', displayOrder: 5, published: true },
   { id: 'cat-6', name: 'Print Design', slug: 'print-design', description: 'Posters, flyers, business cards, and stationery', displayOrder: 6, published: true },
+  { id: 'cat-7', name: 'Other', slug: 'other', description: 'Custom creative projects, illustration, and bespoke design solutions', displayOrder: 7, published: true },
 ];
 
 export const CATEGORIES = [
@@ -106,6 +107,7 @@ export const CATEGORIES = [
   'T Shirt',
   'UI/UX',
   'Print Design',
+  'Other',
 ];
 
 export const PORTFOLIO_PROJECTS: Project[] = [

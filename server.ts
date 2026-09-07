@@ -294,6 +294,7 @@ const APPROVED_CATEGORY_NAMES = [
   'T Shirt',
   'UI/UX',
   'Print Design',
+  'Other',
 ];
 
 const INITIAL_CATEGORIES = [
@@ -303,6 +304,7 @@ const INITIAL_CATEGORIES = [
   { id: 'cat-4', name: 'T Shirt', slug: 't-shirt', description: 'Apparel graphic design, merchandise, and vector artwork', displayOrder: 4, published: true },
   { id: 'cat-5', name: 'UI/UX', slug: 'ui-ux', description: 'Web design, mobile interfaces, and digital experiences', displayOrder: 5, published: true },
   { id: 'cat-6', name: 'Print Design', slug: 'print-design', description: 'Posters, flyers, business cards, and stationery', displayOrder: 6, published: true },
+  { id: 'cat-7', name: 'Other', slug: 'other', description: 'Custom creative projects, illustration, and bespoke design solutions', displayOrder: 7, published: true },
 ];
 
 const INITIAL_PACKAGES = [
@@ -431,6 +433,7 @@ function cleanCategory(raw?: string): string {
   if (clean === 't-shirt' || clean === 't shirt' || clean === 'tshirt' || clean.includes('shirt') || clean.includes('apparel')) return 'T Shirt';
   if (clean === 'ui-ux' || clean === 'ui/ux' || clean === 'ui' || clean === 'ux' || clean.includes('ui/ux') || clean.includes('ui') || clean.includes('ux')) return 'UI/UX';
   if (clean === 'print-design' || clean === 'print design' || clean === 'print' || clean.includes('print')) return 'Print Design';
+  if (clean === 'other' || clean.includes('other') || clean === 'custom' || clean === 'misc') return 'Other';
 
   return 'Branding';
 }
@@ -929,11 +932,12 @@ app.post(['/api/upload', '/api/upload/single', '/api/upload/batch'], (req, res) 
 });
 
 // ----------------------------------------------------
-// PROJECTS API
+// PROJECTS / PORTFOLIO API
 // ----------------------------------------------------
-app.get('/api/projects', (req, res) => {
+app.get(['/api/projects', '/api/portfolio'], (req, res) => {
   const db = readDb();
-  const publishedOnly = req.query.published_only === 'true';
+  const isAdmin = checkAuth(req);
+  const publishedOnly = req.query.published_only === 'true' || (!isAdmin && req.query.all !== 'true');
   const category = req.query.category as string;
 
   let projects = [...db.projects];
@@ -958,7 +962,7 @@ app.get('/api/projects', (req, res) => {
   return res.json({ success: true, projects });
 });
 
-app.get('/api/projects/:idOrSlug', (req, res) => {
+app.get(['/api/projects/:idOrSlug', '/api/portfolio/:idOrSlug'], (req, res) => {
   const db = readDb();
   const { idOrSlug } = req.params;
   const project = db.projects.find((p) => p.id === idOrSlug || p.slug === idOrSlug);
@@ -968,7 +972,7 @@ app.get('/api/projects/:idOrSlug', (req, res) => {
   return res.json({ success: true, project });
 });
 
-app.post('/api/projects', (req, res) => {
+app.post(['/api/projects', '/api/portfolio'], (req, res) => {
   if (!checkAuth(req)) {
     return res.status(401).json({ success: false, message: 'Admin authentication required' });
   }
@@ -1042,7 +1046,7 @@ app.post('/api/projects', (req, res) => {
   return res.status(201).json({ success: true, project: newProject });
 });
 
-app.put('/api/projects/:id', (req, res) => {
+app.put(['/api/projects/:id', '/api/portfolio/:id'], (req, res) => {
   if (!checkAuth(req)) {
     return res.status(401).json({ success: false, message: 'Admin authentication required' });
   }
@@ -1110,7 +1114,7 @@ app.put('/api/projects/:id', (req, res) => {
   return res.json({ success: true, project: updatedProject });
 });
 
-app.delete('/api/projects/:id', (req, res) => {
+app.delete(['/api/projects/:id', '/api/portfolio/:id'], (req, res) => {
   if (!checkAuth(req)) {
     return res.status(401).json({ success: false, message: 'Admin authentication required' });
   }
@@ -1123,13 +1127,27 @@ app.delete('/api/projects/:id', (req, res) => {
     return res.status(404).json({ success: false, message: 'Project not found' });
   }
 
+  // Attempt to delete any uploaded images in /uploads if they are safe
+  const imagesToDelete = [project.thumbnail, project.hero, ...(project.gallery || [])];
+  for (const imgUrl of imagesToDelete) {
+    if (typeof imgUrl === 'string' && imgUrl.startsWith('/uploads/')) {
+      const filename = path.basename(imgUrl);
+      try {
+        const p1 = path.join(DATA_UPLOAD_DIR, filename);
+        if (fs.existsSync(p1)) fs.unlinkSync(p1);
+        const p2 = path.join(PUBLIC_UPLOAD_DIR, filename);
+        if (fs.existsSync(p2)) fs.unlinkSync(p2);
+      } catch {}
+    }
+  }
+
   db.projects = db.projects.filter((p) => p.id !== id && p.slug !== id);
   writeDb(db);
 
   return res.json({ success: true, message: 'Project deleted successfully' });
 });
 
-app.post('/api/projects/:id/duplicate', (req, res) => {
+app.post(['/api/projects/:id/duplicate', '/api/portfolio/:id/duplicate'], (req, res) => {
   if (!checkAuth(req)) {
     return res.status(401).json({ success: false, message: 'Admin authentication required' });
   }
@@ -1159,7 +1177,7 @@ app.post('/api/projects/:id/duplicate', (req, res) => {
   return res.json({ success: true, project: duplicatedProject });
 });
 
-app.patch('/api/projects/:id/publish', (req, res) => {
+app.patch(['/api/projects/:id/publish', '/api/portfolio/:id/publish'], (req, res) => {
   if (!checkAuth(req)) {
     return res.status(401).json({ success: false, message: 'Admin authentication required' });
   }
@@ -1172,14 +1190,34 @@ app.patch('/api/projects/:id/publish', (req, res) => {
     return res.status(404).json({ success: false, message: 'Project not found' });
   }
 
-  project.published = req.body.published !== undefined ? Boolean(req.body.published) : !project.published;
+  project.published = req.body.published !== undefined ? Boolean(req.body.published) : true;
   project.updatedAt = new Date().toISOString();
   writeDb(db);
 
   return res.json({ success: true, published: project.published, project });
 });
 
-app.patch('/api/projects/:id/featured', (req, res) => {
+app.patch(['/api/projects/:id/unpublish', '/api/portfolio/:id/unpublish'], (req, res) => {
+  if (!checkAuth(req)) {
+    return res.status(401).json({ success: false, message: 'Admin authentication required' });
+  }
+
+  const db = readDb();
+  const { id } = req.params;
+  const project = db.projects.find((p) => p.id === id || p.slug === id);
+
+  if (!project) {
+    return res.status(404).json({ success: false, message: 'Project not found' });
+  }
+
+  project.published = false;
+  project.updatedAt = new Date().toISOString();
+  writeDb(db);
+
+  return res.json({ success: true, published: false, project });
+});
+
+app.patch(['/api/projects/:id/featured', '/api/portfolio/:id/featured'], (req, res) => {
   if (!checkAuth(req)) {
     return res.status(401).json({ success: false, message: 'Admin authentication required' });
   }

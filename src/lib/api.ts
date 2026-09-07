@@ -441,6 +441,22 @@ export async function apiTogglePublish(id: string, published: boolean): Promise<
   return data.published;
 }
 
+export async function apiPublishProject(id: string): Promise<boolean> {
+  return apiTogglePublish(id, true);
+}
+
+export async function apiUnpublishProject(id: string): Promise<boolean> {
+  const res = await fetch(`${API_BASE}/projects/${id}/unpublish`, {
+    method: 'PATCH',
+    headers: getAuthHeaders(),
+  });
+  const data = await parseResponseJson(res, `Unpublish ${id}`);
+  if (!res.ok || !data.success) {
+    throw new Error(data.message || 'Failed to unpublish project');
+  }
+  return false;
+}
+
 export async function apiToggleFeatured(id: string, featured: boolean): Promise<boolean> {
   const res = await fetch(`${API_BASE}/projects/${id}/featured`, {
     method: 'PATCH',

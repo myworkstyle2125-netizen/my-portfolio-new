@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import {
   ArrowUpRight,
+  CheckCircle2,
+  Clock,
   Eye,
   FileText,
   FolderTree,
@@ -18,6 +20,7 @@ import {
   Sparkles,
   Star,
   TrendingUp,
+  UploadCloud,
   User,
   X,
 } from 'lucide-react';
@@ -39,16 +42,27 @@ import { PackagesManager } from './PackagesManager';
 import { SettingsManager } from './SettingsManager';
 import { ReviewsManager } from './ReviewsManager';
 import { ProjectEditorModal } from './ProjectEditorModal';
+import { UploadImagesView } from './UploadImagesView';
 
 interface AdminDashboardProps {
   onBackToSite: () => void;
   onLogout: () => void;
 }
 
-type AdminTab = 'dashboard' | 'projects' | 'categories' | 'packages' | 'messages' | 'reviews' | 'settings';
+type AdminTab =
+  | 'dashboard'
+  | 'portfolio'
+  | 'upload'
+  | 'categories'
+  | 'published'
+  | 'drafts'
+  | 'settings'
+  | 'packages'
+  | 'messages'
+  | 'reviews';
 
 export function AdminDashboard({ onBackToSite, onLogout }: AdminDashboardProps) {
-  const [activeTab, setActiveTab] = useState<AdminTab>('projects');
+  const [activeTab, setActiveTab] = useState<AdminTab>('portfolio');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [projects, setProjects] = useState<Project[]>([]);
@@ -171,38 +185,42 @@ export function AdminDashboard({ onBackToSite, onLogout }: AdminDashboardProps) 
         </div>
 
         {/* Menu Navigation Items */}
-        <nav className="flex-1 px-4 py-5 space-y-1.5 overflow-y-auto">
+        <nav className="flex-1 px-4 py-5 space-y-1 overflow-y-auto">
+          <div className="px-3 pb-2 text-[0.65rem] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+            Portfolio CMS
+          </div>
+
           <button
             type="button"
             onClick={() => {
               setActiveTab('dashboard');
               setSidebarOpen(false);
             }}
-            className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-medium transition-colors ${
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition-colors ${
               activeTab === 'dashboard'
                 ? 'bg-accent/15 text-accent border border-accent/30 font-semibold'
                 : 'text-muted-foreground hover:text-foreground hover:bg-surface'
             }`}
           >
             <span className="flex items-center gap-3">
-              <LayoutDashboard className="h-4 w-4" /> Dashboard Overview
+              <LayoutDashboard className="h-4 w-4" /> Dashboard
             </span>
           </button>
 
           <button
             type="button"
             onClick={() => {
-              setActiveTab('projects');
+              setActiveTab('portfolio');
               setSidebarOpen(false);
             }}
-            className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-medium transition-colors ${
-              activeTab === 'projects'
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition-colors ${
+              activeTab === 'portfolio'
                 ? 'bg-accent/15 text-accent border border-accent/30 font-semibold'
                 : 'text-muted-foreground hover:text-foreground hover:bg-surface'
             }`}
           >
             <span className="flex items-center gap-3">
-              <FileText className="h-4 w-4" /> Projects & Portfolio
+              <FileText className="h-4 w-4" /> Portfolio
             </span>
             <span className="rounded-full bg-surface border border-border px-2 py-0.5 text-[0.65rem]">
               {projects.length}
@@ -212,10 +230,30 @@ export function AdminDashboard({ onBackToSite, onLogout }: AdminDashboardProps) 
           <button
             type="button"
             onClick={() => {
+              setActiveTab('upload');
+              setSidebarOpen(false);
+            }}
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition-colors ${
+              activeTab === 'upload'
+                ? 'bg-accent/15 text-accent border border-accent/30 font-semibold'
+                : 'text-muted-foreground hover:text-foreground hover:bg-surface'
+            }`}
+          >
+            <span className="flex items-center gap-3">
+              <UploadCloud className="h-4 w-4 text-accent" /> Upload Images
+            </span>
+            <span className="rounded-full bg-accent/20 text-accent font-semibold px-1.5 py-0.5 text-[0.6rem]">
+              DIRECT
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
               setActiveTab('categories');
               setSidebarOpen(false);
             }}
-            className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-medium transition-colors ${
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition-colors ${
               activeTab === 'categories'
                 ? 'bg-accent/15 text-accent border border-accent/30 font-semibold'
                 : 'text-muted-foreground hover:text-foreground hover:bg-surface'
@@ -232,10 +270,71 @@ export function AdminDashboard({ onBackToSite, onLogout }: AdminDashboardProps) 
           <button
             type="button"
             onClick={() => {
+              setActiveTab('published');
+              setSidebarOpen(false);
+            }}
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition-colors ${
+              activeTab === 'published'
+                ? 'bg-accent/15 text-accent border border-accent/30 font-semibold'
+                : 'text-muted-foreground hover:text-foreground hover:bg-surface'
+            }`}
+          >
+            <span className="flex items-center gap-3">
+              <CheckCircle2 className="h-4 w-4 text-emerald-400" /> Published
+            </span>
+            <span className="rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 text-[0.65rem] font-semibold">
+              {publishedCount}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab('drafts');
+              setSidebarOpen(false);
+            }}
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition-colors ${
+              activeTab === 'drafts'
+                ? 'bg-accent/15 text-accent border border-accent/30 font-semibold'
+                : 'text-muted-foreground hover:text-foreground hover:bg-surface'
+            }`}
+          >
+            <span className="flex items-center gap-3">
+              <Clock className="h-4 w-4 text-amber-400" /> Draft / Unpublished
+            </span>
+            <span className="rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 px-2 py-0.5 text-[0.65rem] font-semibold">
+              {draftCount}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setActiveTab('settings');
+              setSidebarOpen(false);
+            }}
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition-colors ${
+              activeTab === 'settings'
+                ? 'bg-accent/15 text-accent border border-accent/30 font-semibold'
+                : 'text-muted-foreground hover:text-foreground hover:bg-surface'
+            }`}
+          >
+            <span className="flex items-center gap-3">
+              <Settings className="h-4 w-4" /> Settings
+            </span>
+          </button>
+
+          <div className="pt-4 pb-1 px-3 text-[0.65rem] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+            More Site Sections
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
               setActiveTab('packages');
               setSidebarOpen(false);
             }}
-            className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-medium transition-colors ${
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition-colors ${
               activeTab === 'packages'
                 ? 'bg-accent/15 text-accent border border-accent/30 font-semibold'
                 : 'text-muted-foreground hover:text-foreground hover:bg-surface'
@@ -252,18 +351,18 @@ export function AdminDashboard({ onBackToSite, onLogout }: AdminDashboardProps) 
               setActiveTab('messages');
               setSidebarOpen(false);
             }}
-            className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-medium transition-colors ${
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition-colors ${
               activeTab === 'messages'
                 ? 'bg-accent/15 text-accent border border-accent/30 font-semibold'
                 : 'text-muted-foreground hover:text-foreground hover:bg-surface'
             }`}
           >
             <span className="flex items-center gap-3">
-              <MessageSquare className="h-4 w-4" /> Inquiries & Leads
+              <MessageSquare className="h-4 w-4" /> Inquiries
             </span>
             {unreadMessagesCount > 0 && (
               <span className="rounded-full bg-accent px-2 py-0.5 text-[0.65rem] font-bold text-accent-foreground">
-                {unreadMessagesCount} new
+                {unreadMessagesCount}
               </span>
             )}
           </button>
@@ -274,41 +373,20 @@ export function AdminDashboard({ onBackToSite, onLogout }: AdminDashboardProps) 
               setActiveTab('reviews');
               setSidebarOpen(false);
             }}
-            className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-medium transition-colors ${
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium transition-colors ${
               activeTab === 'reviews'
                 ? 'bg-accent/15 text-accent border border-accent/30 font-semibold'
                 : 'text-muted-foreground hover:text-foreground hover:bg-surface'
             }`}
           >
             <span className="flex items-center gap-3">
-              <Star className="h-4 w-4" /> Reviews & Feedback
+              <Star className="h-4 w-4" /> Reviews
             </span>
-            {pendingReviewsCount > 0 ? (
+            {pendingReviewsCount > 0 && (
               <span className="rounded-full bg-amber-400 px-2 py-0.5 text-[0.65rem] font-bold text-black">
-                {pendingReviewsCount} pending
-              </span>
-            ) : (
-              <span className="rounded-full bg-surface border border-border px-2 py-0.5 text-[0.65rem]">
-                {testimonials.length}
+                {pendingReviewsCount}
               </span>
             )}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              setActiveTab('settings');
-              setSidebarOpen(false);
-            }}
-            className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-xs font-medium transition-colors ${
-              activeTab === 'settings'
-                ? 'bg-accent/15 text-accent border border-accent/30 font-semibold'
-                : 'text-muted-foreground hover:text-foreground hover:bg-surface'
-            }`}
-          >
-            <span className="flex items-center gap-3">
-              <Settings className="h-4 w-4" /> Settings & Account
-            </span>
           </button>
         </nav>
 
@@ -354,12 +432,15 @@ export function AdminDashboard({ onBackToSite, onLogout }: AdminDashboardProps) 
               </p>
               <h2 className="text-sm font-bold text-foreground capitalize">
                 {activeTab === 'dashboard' && 'Dashboard Overview'}
-                {activeTab === 'projects' && 'Projects & Works Manager'}
+                {activeTab === 'portfolio' && 'Portfolio Projects'}
+                {activeTab === 'upload' && 'Upload Images to Portfolio'}
                 {activeTab === 'categories' && 'Portfolio Categories'}
+                {activeTab === 'published' && 'Published Portfolio Works'}
+                {activeTab === 'drafts' && 'Draft & Unpublished Works'}
+                {activeTab === 'settings' && 'CMS & Owner Settings'}
                 {activeTab === 'packages' && 'Design Packages & Pricing'}
                 {activeTab === 'messages' && 'Client Inquiries'}
-                {activeTab === 'reviews' && 'Reviews & Testimonials'}
-                {activeTab === 'settings' && 'CMS & Owner Settings'}
+                {activeTab === 'reviews' && 'Reviews & Feedback'}
               </h2>
             </div>
           </div>
@@ -422,7 +503,7 @@ export function AdminDashboard({ onBackToSite, onLogout }: AdminDashboardProps) 
               {/* Metric Cards Grid */}
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
                 <div
-                  onClick={() => setActiveTab('projects')}
+                  onClick={() => setActiveTab('portfolio')}
                   className="cursor-pointer rounded-2xl border border-border bg-surface p-5 transition-all hover:border-accent/50 hover:shadow-md"
                 >
                   <div className="flex items-center justify-between text-muted-foreground">
@@ -496,7 +577,7 @@ export function AdminDashboard({ onBackToSite, onLogout }: AdminDashboardProps) 
                     <h3 className="text-sm font-semibold text-foreground">Recent Portfolio Works</h3>
                     <button
                       type="button"
-                      onClick={() => setActiveTab('projects')}
+                      onClick={() => setActiveTab('portfolio')}
                       className="text-xs text-accent hover:underline"
                     >
                       View all ({projects.length})
@@ -568,12 +649,50 @@ export function AdminDashboard({ onBackToSite, onLogout }: AdminDashboardProps) 
             </div>
           )}
 
-          {activeTab === 'projects' && (
+          {activeTab === 'portfolio' && (
             <ProjectsManager
               projects={projects}
               categories={categories}
               onRefresh={loadData}
               onRefreshCategories={loadData}
+              initialStatusFilter="all"
+              onNavigateToUpload={() => setActiveTab('upload')}
+            />
+          )}
+
+          {activeTab === 'upload' && (
+            <UploadImagesView
+              categories={categories}
+              onProjectCreated={() => {
+                loadData();
+              }}
+              onNavigateToPortfolio={(filter) => {
+                if (filter === 'published') setActiveTab('published');
+                else if (filter === 'draft') setActiveTab('drafts');
+                else setActiveTab('portfolio');
+              }}
+            />
+          )}
+
+          {activeTab === 'published' && (
+            <ProjectsManager
+              projects={projects}
+              categories={categories}
+              onRefresh={loadData}
+              onRefreshCategories={loadData}
+              initialStatusFilter="published"
+              onNavigateToUpload={() => setActiveTab('upload')}
+            />
+          )}
+
+          {activeTab === 'drafts' && (
+            <ProjectsManager
+              projects={projects}
+              categories={categories}
+              onRefresh={loadData}
+              onRefreshCategories={loadData}
+              initialStatusFilter="draft"
+              onNavigateToUpload={() => setActiveTab('upload')}
             />
           )}
 
@@ -623,7 +742,7 @@ export function AdminDashboard({ onBackToSite, onLogout }: AdminDashboardProps) 
           onRefreshCategories={loadData}
           onSaved={() => {
             loadData();
-            setActiveTab('projects');
+            setActiveTab('portfolio');
           }}
         />
       )}

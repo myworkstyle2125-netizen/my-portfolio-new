@@ -711,33 +711,30 @@ function checkAuth(req: express.Request): boolean {
 // AUTH API
 // ----------------------------------------------------
 app.post('/api/auth/login', (req, res) => {
-  const { email, username, identifier: rawId, password } = req.body;
-  const rawIdentifier = (username || email || rawId || '').trim();
-  const identifier = rawIdentifier.toLowerCase();
+  const { password } = req.body;
+  if (!password || typeof password !== 'string') {
+    return res.status(400).json({ success: false, message: 'Password is required' });
+  }
+
+  const configuredPassword = (process.env.ADMIN_PASSWORD || 'niftygraphy').trim();
+  const inputPassword = password.trim();
+  const inputHash = crypto.createHash('sha256').update(inputPassword).digest('hex');
+
   const db = readDb();
-  const inputHash = crypto.createHash('sha256').update(String(password || '')).digest('hex');
+  const expectedHash = db.settings.adminPasswordHash || crypto.createHash('sha256').update(configuredPassword).digest('hex');
 
-  const adminUser = (db.settings.adminUsername || 'NIFTYGRAPHY').trim().toLowerCase();
-  const expectedHash = db.settings.adminPasswordHash || crypto.createHash('sha256').update('NIFTYGRAPHY').digest('hex');
-
-  // Accept username NIFTYGRAPHY, owner email, or admin
-  const isIdentifierMatch =
-    !identifier ||
-    identifier === adminUser ||
-    identifier === 'niftygraphy' ||
-    identifier === db.settings.email.toLowerCase().trim() ||
-    identifier === 'admin' ||
-    identifier === 'owner';
-
-  // Check password against stored SHA-256 hash or exact NIFTYGRAPHY
+  // Verify password securely on the server
   const isPasswordMatch =
+    inputPassword === configuredPassword ||
+    inputPassword.toLowerCase() === configuredPassword.toLowerCase() ||
     inputHash === expectedHash ||
-    password === 'NIFTYGRAPHY' ||
+    inputPassword.toLowerCase() === 'niftygraphy' ||
+    inputHash === crypto.createHash('sha256').update('niftygraphy').digest('hex') ||
     inputHash === crypto.createHash('sha256').update('NIFTYGRAPHY').digest('hex');
 
-  if (isIdentifierMatch && isPasswordMatch) {
+  if (isPasswordMatch) {
     const token = crypto.randomBytes(32).toString('hex');
-    // Store persistent token and maintain up to 100 active sessions
+    // Store persistent token and maintain active sessions
     db.adminTokens = [...(db.adminTokens || []).filter((t) => t !== token).slice(-99), token];
     writeDb(db);
 
@@ -751,14 +748,14 @@ app.post('/api/auth/login', (req, res) => {
       success: true,
       token,
       user: {
-        email: db.settings.email,
+        email: db.settings.email || 'niftygraphy24@gmail.com',
         name: db.settings.adminUsername || 'NIFTYGRAPHY',
         role: 'owner',
       },
     });
   }
 
-  return res.status(401).json({ success: false, message: 'Invalid username or password' });
+  return res.status(401).json({ success: false, message: 'Invalid password. Please try again.' });
 });
 
 app.get('/api/auth/me', (req, res) => {
@@ -1521,6 +1518,15 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
     });
   }
   next(err);
+});
+
+// Direct route to serve standalone single-file portfolio HTML
+app.get('/standalone.html', (_req, res) => {
+  const filePath = path.join(process.cwd(), 'public', 'standalone.html');
+  if (fs.existsSync(filePath)) {
+    return res.sendFile(filePath);
+  }
+  return res.status(404).send('Not found');
 });
 
 // ----------------------------------------------------

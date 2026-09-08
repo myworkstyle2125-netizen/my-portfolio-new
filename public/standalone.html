@@ -1,0 +1,1954 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Niftygraphy — Professional Graphic Designer | Branding &amp; Visual Design</title>
+  <meta name="author" content="Niftygraphy">
+  <meta name="description" content="Niftygraphy is a professional graphic designer specializing in branding, social media design, YouTube thumbnails, advertising, UI/UX and creative visual design.">
+  <meta property="og:site_name" content="Niftygraphy">
+  <meta property="og:title" content="Niftygraphy — Professional Graphic Designer | Branding &amp; Visual Design">
+  <meta property="og:description" content="Niftygraphy is a professional graphic designer specializing in branding, social media design, YouTube thumbnails, advertising, UI/UX and creative visual design.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    /* --------------------------------------------------------------------------
+       NIFTYGRAPHY EXACT DESIGN TOKENS & SYSTEM STYLES
+       -------------------------------------------------------------------------- */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg-color: #0f0e17;
+      --bg-surface: #161524;
+      --bg-surface-elevated: #1e1c30;
+      --bg-card: #181728;
+      --bg-card-hover: #222036;
+      --text-main: #fffffe;
+      --text-muted: #a7a9be;
+      --text-dim: #72757e;
+      --border-color: rgba(255, 255, 255, 0.08);
+      --border-color-hover: rgba(255, 137, 6, 0.4);
+      --accent: #ff8906;
+      --accent-secondary: #f25f4c;
+      --accent-glow: rgba(255, 137, 6, 0.25);
+      --font-display: 'Space Grotesk', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --radius-sm: 8px;
+      --radius-md: 16px;
+      --radius-lg: 24px;
+      --radius-xl: 28px;
+      --radius-full: 9999px;
+      --transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      line-height: 1.6;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    button {
+      cursor: pointer;
+      font-family: inherit;
+      border: none;
+      background: none;
+      outline: none;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .font-display {
+      font-family: var(--font-display);
+    }
+
+    .text-gradient {
+      background: linear-gradient(135deg, #fffffe 30%, var(--accent) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .text-accent-gradient {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-secondary) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.25em;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+
+    .section-label-bar {
+      width: 32px;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
+      border-radius: var(--radius-full);
+    }
+
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(2.2rem, 4.5vw, 3.4rem);
+      font-weight: 700;
+      line-height: 1.12;
+      letter-spacing: -0.02em;
+      margin-bottom: 16px;
+    }
+
+    .section-subtitle {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      max-width: 680px;
+      line-height: 1.65;
+      margin-bottom: 48px;
+    }
+
+    /* BUTTONS */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 30px;
+      border-radius: var(--radius-full);
+      font-size: 0.92rem;
+      font-weight: 600;
+      transition: var(--transition);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-secondary) 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 24px var(--accent-glow);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(255, 137, 6, 0.4);
+    }
+
+    .btn-outline {
+      border: 1px solid var(--border-color);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text-main);
+      backdrop-filter: blur(8px);
+    }
+
+    .btn-outline:hover {
+      border-color: var(--accent);
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+      transform: translateY(-2px);
+    }
+
+    /* HEADER & NAVBAR */
+    .navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 84px;
+      z-index: 1000;
+      background: rgba(15, 14, 23, 0.85);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+    }
+
+    .nav-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+    }
+
+    .brand-logo-img {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      object-fit: cover;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 36px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      font-weight: 500;
+      position: relative;
+    }
+
+    .nav-links a:hover {
+      color: var(--text-main);
+    }
+
+    .nav-cta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .menu-toggle {
+      display: none;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mobile-menu {
+      position: fixed;
+      top: 84px;
+      left: 0;
+      right: 0;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-color);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      transform: translateY(-150%);
+      opacity: 0;
+      pointer-events: none;
+      transition: var(--transition);
+      z-index: 999;
+    }
+
+    .mobile-menu.open {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .mobile-menu a {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 600;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    /* HERO SECTION */
+    .hero {
+      padding: 175px 0 100px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-glow {
+      position: absolute;
+      top: 15%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 700px;
+      height: 400px;
+      background: radial-gradient(circle, var(--accent-glow) 0%, rgba(242, 95, 76, 0.08) 45%, transparent 70%);
+      filter: blur(120px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      max-width: 900px;
+    }
+
+    .hero-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 20px;
+      border-radius: var(--radius-full);
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.25);
+      color: #4ade80;
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 26px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #4ade80;
+      box-shadow: 0 0 10px #4ade80;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(2.8rem, 6.5vw, 4.8rem);
+      font-weight: 700;
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+      margin-bottom: 24px;
+    }
+
+    .hero-desc {
+      color: var(--text-muted);
+      font-size: clamp(1.05rem, 2vw, 1.25rem);
+      line-height: 1.65;
+      max-width: 720px;
+      margin-bottom: 40px;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 54px;
+    }
+
+    .hero-socials {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 24px;
+      padding-top: 28px;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .hero-socials a {
+      color: var(--text-dim);
+      font-size: 0.88rem;
+      font-weight: 500;
+    }
+
+    .hero-socials a:hover {
+      color: var(--accent);
+    }
+
+    /* STATS SECTION */
+    .stats-section {
+      padding: 44px 0;
+      border-top: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border-color);
+      background: rgba(255, 255, 255, 0.015);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 10px;
+    }
+
+    .stat-num {
+      font-family: var(--font-display);
+      font-size: 2.6rem;
+      font-weight: 700;
+      line-height: 1.1;
+      margin-bottom: 6px;
+    }
+
+    .stat-label {
+      font-size: 0.82rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* ABOUT SECTION & IMAGE SLIDER */
+    .about-section {
+      padding: 130px 0;
+      position: relative;
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 70px;
+      align-items: center;
+    }
+
+    /* CAROUSEL CARD */
+    .about-carousel-card {
+      position: relative;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+      transition: border-color 0.3s ease;
+    }
+
+    .about-carousel-card:hover {
+      border-color: rgba(255, 137, 6, 0.4);
+    }
+
+    .carousel-track {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 3 / 4;
+      overflow: hidden;
+      background: #111;
+    }
+
+    .carousel-slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out;
+      transform: scale(1.04);
+      z-index: 1;
+    }
+
+    .carousel-slide.active {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1);
+      z-index: 2;
+    }
+
+    .carousel-slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .carousel-slide-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(15, 14, 23, 0.95) 0%, rgba(15, 14, 23, 0.25) 50%, transparent 100%);
+    }
+
+    /* COUNTER BADGE (TOP-RIGHT) */
+    .carousel-counter-badge {
+      position: absolute;
+      top: 18px;
+      right: 18px;
+      z-index: 20;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      background: rgba(15, 14, 23, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(12px);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: var(--text-main);
+    }
+
+    .carousel-counter-badge .current {
+      color: var(--accent);
+    }
+
+    /* NAVIGATION ARROWS (< AND >) */
+    .carousel-nav-arrows {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      z-index: 20;
+      pointer-events: none;
+    }
+
+    .arrow-btn {
+      pointer-events: auto;
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(15, 14, 23, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1rem;
+      backdrop-filter: blur(12px);
+      transition: var(--transition);
+    }
+
+    .arrow-btn:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #ffffff;
+      transform: scale(1.1);
+    }
+
+    .arrow-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* BOTTOM FLOATING INFO BADGE */
+    .carousel-info-badge {
+      position: absolute;
+      bottom: 24px;
+      left: 20px;
+      right: 20px;
+      z-index: 20;
+      background: rgba(15, 14, 23, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      backdrop-filter: blur(14px);
+    }
+
+    .carousel-info-badge h4 {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .carousel-info-badge p {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    /* ABOUT TEXT */
+    .about-info h2 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 3.8vw, 2.8rem);
+      font-weight: 700;
+      line-height: 1.15;
+      margin-bottom: 24px;
+    }
+
+    .about-info p {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      line-height: 1.75;
+      margin-bottom: 22px;
+    }
+
+    .skills-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 32px;
+      list-style: none;
+    }
+
+    .skill-pill {
+      padding: 8px 18px;
+      border-radius: var(--radius-full);
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      transition: var(--transition);
+    }
+
+    .skill-pill:hover {
+      border-color: var(--accent);
+      color: var(--text-main);
+      transform: translateY(-2px);
+    }
+
+    /* WORKS / PORTFOLIO & CATEGORY FILTER BUTTONS */
+    .works-section {
+      padding: 130px 0;
+      background: rgba(255, 255, 255, 0.01);
+    }
+
+    .filter-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 48px;
+    }
+
+    .filter-btn {
+      padding: 10px 22px;
+      border-radius: var(--radius-full);
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      border: 1px solid var(--border-color);
+      background: var(--bg-surface);
+      transition: var(--transition);
+    }
+
+    .filter-btn:hover {
+      border-color: var(--border-color-hover);
+      color: var(--text-main);
+    }
+
+    .filter-btn.active {
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-secondary) 100%);
+      border-color: var(--accent);
+      color: #ffffff;
+      box-shadow: 0 4px 18px var(--accent-glow);
+    }
+
+    /* PROJECTS GRID */
+    .projects-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+    }
+
+    .project-card {
+      position: relative;
+      background: var(--bg-surface);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-color);
+      overflow: hidden;
+      transition: var(--transition);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .project-card:hover {
+      border-color: var(--border-color-hover);
+      transform: translateY(-6px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .project-card.featured-wide {
+      grid-column: span 2;
+    }
+
+    .project-card.featured-tall {
+      grid-row: span 2;
+    }
+
+    .project-thumb-wrap {
+      position: relative;
+      width: 100%;
+      height: 260px;
+      overflow: hidden;
+      background: #111;
+    }
+
+    .project-card.featured-tall .project-thumb-wrap {
+      height: 480px;
+    }
+
+    .project-thumb {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .project-card:hover .project-thumb {
+      transform: scale(1.06);
+    }
+
+    .project-card-overlay {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(15, 14, 23, 0.95) 0%, rgba(15, 14, 23, 0.15) 60%, transparent 100%);
+    }
+
+    .project-info {
+      padding: 26px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .project-cat {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    .project-title {
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+      line-height: 1.25;
+    }
+
+    .project-desc {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1.55;
+      margin-bottom: 20px;
+    }
+
+    .project-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--text-main);
+      transition: var(--transition);
+    }
+
+    .project-card:hover .project-link {
+      color: var(--accent);
+      transform: translateX(4px);
+    }
+
+    /* SERVICES SECTION */
+    .services-section {
+      padding: 130px 0;
+    }
+
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+    }
+
+    .service-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 38px 32px;
+      transition: var(--transition);
+    }
+
+    .service-card:hover {
+      border-color: var(--border-color-hover);
+      transform: translateY(-4px);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
+    }
+
+    .service-num {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--accent);
+      margin-bottom: 20px;
+    }
+
+    .service-card h3 {
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .service-card p {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      line-height: 1.65;
+    }
+
+    /* PROCESS SECTION */
+    .process-section {
+      padding: 130px 0;
+      background: rgba(255, 255, 255, 0.015);
+    }
+
+    .process-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+    }
+
+    .process-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 34px 26px;
+    }
+
+    .process-num {
+      font-family: var(--font-display);
+      font-size: 2.4rem;
+      font-weight: 800;
+      color: var(--accent);
+      margin-bottom: 16px;
+    }
+
+    .process-card h4 {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .process-card p {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      line-height: 1.6;
+    }
+
+    /* REVIEWS SECTION */
+    .reviews-section {
+      padding: 130px 0;
+    }
+
+    .reviews-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+    }
+
+    .review-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 34px 30px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .review-stars {
+      color: #fbbf24;
+      font-size: 1.05rem;
+      letter-spacing: 2px;
+      margin-bottom: 18px;
+    }
+
+    .review-text {
+      color: var(--text-main);
+      font-size: 0.98rem;
+      line-height: 1.68;
+      font-style: italic;
+      margin-bottom: 24px;
+    }
+
+    .review-author {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .author-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .author-info h5 {
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      font-weight: 700;
+    }
+
+    .author-info span {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* CONTACT SECTION */
+    .contact-section {
+      padding: 130px 0 90px;
+      position: relative;
+    }
+
+    .contact-box {
+      background: linear-gradient(135deg, rgba(22, 21, 36, 0.95) 0%, rgba(30, 28, 48, 0.85) 100%);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-xl);
+      padding: 64px 54px;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 64px;
+    }
+
+    .contact-form {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-group label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+    }
+
+    .form-input, .form-textarea {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 14px 20px;
+      color: var(--text-main);
+      font-family: inherit;
+      font-size: 0.95rem;
+      outline: none;
+      transition: var(--transition);
+    }
+
+    .form-input:focus, .form-textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 14px var(--accent-glow);
+    }
+
+    .contact-info-list {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      justify-content: center;
+    }
+
+    .contact-info-card {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      padding: 18px 24px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+    }
+
+    .contact-info-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(255, 137, 6, 0.12);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+    }
+
+    /* FOOTER */
+    .footer {
+      padding: 50px 0;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .footer-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--text-dim);
+      font-size: 0.88rem;
+    }
+
+    /* MODAL CASE STUDY */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.88);
+      backdrop-filter: blur(12px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+      opacity: 0;
+      visibility: hidden;
+      transition: var(--transition);
+      padding: 24px;
+    }
+
+    .modal-backdrop.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-box {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-xl);
+      max-width: 820px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+      padding: 40px;
+      transform: scale(0.95);
+      transition: var(--transition);
+    }
+
+    .modal-backdrop.active .modal-box {
+      transform: scale(1);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 22px;
+      right: 22px;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      cursor: pointer;
+    }
+
+    .modal-img-wrap {
+      width: 100%;
+      height: 400px;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      margin-bottom: 28px;
+    }
+
+    .modal-img-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 1024px) {
+      .about-grid, .contact-box {
+        grid-template-columns: 1fr;
+        gap: 48px;
+      }
+      .projects-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .project-card.featured-wide {
+        grid-column: span 1;
+      }
+      .services-grid, .reviews-grid, .process-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .nav-links, .nav-cta .btn {
+        display: none;
+      }
+      .menu-toggle {
+        display: flex;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .projects-grid, .services-grid, .reviews-grid, .process-grid, .stats-grid {
+        grid-template-columns: 1fr;
+      }
+      .contact-box {
+        padding: 36px 24px;
+      }
+      .footer-container {
+        flex-direction: column;
+        gap: 16px;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ==================== HEADER ==================== -->
+  <header class="navbar" id="navbar">
+    <div class="container nav-container">
+      <a href="#home" class="brand">
+        <img src="/assets/niftygraphy-logo.jpg" onerror="this.style.display='none'" class="brand-logo-img" alt="Niftygraphy Logo">
+        <span>NIFTYGRAPHY</span>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="#home">Home</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#works">Works</a></li>
+        <li><a href="#services">Services</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+
+      <div class="nav-cta">
+        <a href="https://wa.me/94759700219" target="_blank" rel="noopener" class="btn btn-outline">Let's Talk</a>
+        <button class="menu-toggle" id="menuToggle" aria-label="Toggle Menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MOBILE MENU DROPDOWN -->
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="#home" class="mobile-link">Home</a>
+    <a href="#about" class="mobile-link">About</a>
+    <a href="#works" class="mobile-link">Works</a>
+    <a href="#services" class="mobile-link">Services</a>
+    <a href="#contact" class="mobile-link">Contact</a>
+  </div>
+
+  <!-- ==================== HERO ==================== -->
+  <section class="hero" id="home">
+    <div class="hero-glow"></div>
+    <div class="container">
+      <div class="hero-content">
+        <div class="hero-status">
+          <span class="status-dot"></span>
+          <span>Available for Projects</span>
+        </div>
+
+        <h1 class="hero-title">
+          Designing ideas into <br>
+          <span class="text-gradient">visual experiences.</span>
+        </h1>
+
+        <p class="hero-desc">
+          Hi, I'm P.D. Yadeesha Shen Perera — a creative graphic designer crafting distinctive brand identities, high-converting social media assets, YouTube thumbnails, and digital experiences.
+        </p>
+
+        <div class="hero-actions">
+          <a href="#works" class="btn btn-primary">
+            Explore Works
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+          </a>
+          <a href="#contact" class="btn btn-outline">Contact Me</a>
+        </div>
+
+        <div class="hero-socials">
+          <a href="https://wa.me/94759700219" target="_blank" rel="noopener">WhatsApp</a>
+          <a href="https://whatsapp.com/channel/0029VanZieE8KMqhmpZM3t3i" target="_blank" rel="noopener">WhatsApp Channel</a>
+          <a href="https://www.facebook.com/profile.php?id=61555615503916" target="_blank" rel="noopener">Facebook</a>
+          <a href="https://www.instagram.com/nifty__graphy/" target="_blank" rel="noopener">Instagram</a>
+          <a href="https://www.tiktok.com/@niftygraphy" target="_blank" rel="noopener">TikTok</a>
+          <a href="https://youtube.com/@niftygraphy" target="_blank" rel="noopener">YouTube</a>
+          <a href="https://www.linkedin.com/in/p-d-yadeesha-shen-perera-624b1b349" target="_blank" rel="noopener">LinkedIn</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== STATS ==================== -->
+  <section class="stats-section">
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-num text-accent-gradient">150+</div>
+          <div class="stat-label">Projects Completed</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num text-accent-gradient">60+</div>
+          <div class="stat-label">Happy Clients</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num text-accent-gradient">3+</div>
+          <div class="stat-label">Years Experience</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-num text-accent-gradient">15+</div>
+          <div class="stat-label">Creative Services</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== ABOUT & IMAGE SLIDER ==================== -->
+  <section class="about-section" id="about">
+    <div class="container">
+      <div class="about-grid">
+
+        <!-- MULTI-IMAGE CAROUSEL CARD -->
+        <div class="about-carousel-wrap">
+          <div class="about-carousel-card" id="aboutCarousel">
+            
+            <div class="carousel-track">
+              <!-- SLIDE 1 -->
+              <div class="carousel-slide active" data-index="1" data-caption="The Art of Creation" data-sub="Creative Direction &amp; Production">
+                <img src="https://i.imgur.com/TANZYbs.jpeg" onerror="this.src='/assets/about-slide-1.jpg'" alt="Creator's Vision - The Art of Creation">
+                <div class="carousel-slide-overlay"></div>
+              </div>
+
+              <!-- SLIDE 2 -->
+              <div class="carousel-slide" data-index="2" data-caption="Shen Perera" data-sub="Independent Graphic Designer">
+                <img src="https://i.imgur.com/R7RzgEg.jpg" onerror="this.src='/assets/about-slide-2.jpg'" alt="P.D. Yadeesha Shen Perera - Studio Portrait">
+                <div class="carousel-slide-overlay"></div>
+              </div>
+
+              <!-- SLIDE 3 -->
+              <div class="carousel-slide" data-index="3" data-caption="The Silent Craft" data-sub="Precision &amp; Visual Identity">
+                <img src="https://i.imgur.com/Zg3eby0.jpg" onerror="this.src='/assets/about-slide-3.jpg'" alt="Focus and Determination - Niftygraphy">
+                <div class="carousel-slide-overlay"></div>
+              </div>
+
+              <!-- SLIDE 4 -->
+              <div class="carousel-slide" data-index="4" data-caption="Creative Velocity" data-sub="Modern Motion &amp; Glitch Aesthetics">
+                <img src="https://i.imgur.com/fhVm1r2.jpg" onerror="this.src='/assets/about-slide-4.jpg'" alt="Violet Glitch &amp; Motion Aesthetic Portrait">
+                <div class="carousel-slide-overlay"></div>
+              </div>
+            </div>
+
+            <!-- TOP-RIGHT COUNTER (1/4, 2/4, 3/4, 4/4) -->
+            <div class="carousel-counter-badge" id="carouselCounterBadge">
+              <span class="current" id="carouselCurrentNum">1</span>
+              <span>/</span>
+              <span id="carouselTotalNum">4</span>
+            </div>
+
+            <!-- < AND > NAVIGATION BUTTONS -->
+            <div class="carousel-nav-arrows">
+              <button type="button" class="arrow-btn" id="prevSlideBtn" aria-label="Previous image">
+                &#10094;
+              </button>
+              <button type="button" class="arrow-btn" id="nextSlideBtn" aria-label="Next image">
+                &#10095;
+              </button>
+            </div>
+
+            <!-- BOTTOM INFO OVERLAY -->
+            <div class="carousel-info-badge">
+              <h4 id="carouselCaption">The Art of Creation</h4>
+              <p id="carouselSubtitle">Creative Direction &amp; Production</p>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ABOUT TEXT -->
+        <div class="about-info">
+          <div class="section-label">
+            <span class="section-label-bar"></span>
+            <span>About</span>
+          </div>
+
+          <h2>
+            Design is not just what I do. <br>
+            <span class="text-gradient">It's how I communicate ideas.</span>
+          </h2>
+
+          <p>
+            Hi, I'm P.D. Yadeesha Shen Perera. With 3+ years of experience in graphic design, I focus on crafting distinct visual identities and engaging design solutions. I blend thoughtful aesthetics with functional layout to build memorable brand experiences that resonate with people.
+          </p>
+
+          <ul class="skills-list">
+            <li class="skill-pill">Adobe Photoshop</li>
+            <li class="skill-pill">Adobe Illustrator</li>
+            <li class="skill-pill">Adobe Premiere Pro</li>
+            <li class="skill-pill">Adobe After Effects</li>
+            <li class="skill-pill">Figma</li>
+            <li class="skill-pill">Canva</li>
+            <li class="skill-pill">Branding</li>
+            <li class="skill-pill">Social Media Design</li>
+            <li class="skill-pill">Thumbnail Design</li>
+            <li class="skill-pill">UI Design</li>
+          </ul>
+
+          <div style="margin-top: 36px;">
+            <a href="#works" class="btn btn-outline">More About Me &rarr;</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== WORKS / PORTFOLIO & CATEGORIES ==================== -->
+  <section class="works-section" id="works">
+    <div class="container">
+      <div class="section-label">
+        <span class="section-label-bar"></span>
+        <span>Selected Works</span>
+      </div>
+
+      <h2 class="section-title">Crafted with intent, <span class="text-gradient">designed to endure.</span></h2>
+      <p class="section-subtitle">
+        A selection of recent projects spanning visual identity, digital platforms, social campaigns and publication design.
+      </p>
+
+      <!-- CATEGORY FILTER BUTTONS -->
+      <div class="filter-tabs" id="filterTabs">
+        <button type="button" class="filter-btn active" data-category="all">All</button>
+        <button type="button" class="filter-btn" data-category="branding">Branding</button>
+        <button type="button" class="filter-btn" data-category="social media">Social Media</button>
+        <button type="button" class="filter-btn" data-category="thumbnails">Thumbnails</button>
+        <button type="button" class="filter-btn" data-category="t shirt">T Shirt</button>
+        <button type="button" class="filter-btn" data-category="ui/ux">UI/UX</button>
+        <button type="button" class="filter-btn" data-category="print design">Print Design</button>
+        <button type="button" class="filter-btn" data-category="other">Other</button>
+      </div>
+
+      <!-- PROJECTS GRID -->
+      <div class="projects-grid" id="projectsGrid">
+        
+        <!-- PROJECT 1: JCK Crypto Exchange -->
+        <div class="project-card featured-wide" data-category="branding" onclick="openProjectModal('JCK Crypto Exchange', 'Branding', '/assets/work-jck.jpg', 'A complete visual identity and social media system for a crypto trading platform that needed to feel secure, fast and unmistakably modern.')">
+          <div class="project-thumb-wrap">
+            <img class="project-thumb" src="/assets/work-jck.jpg" onerror="this.src='https://images.unsplash.com/photo-1621416894569-0f39ed31d247?auto=format&fit=crop&w=900&q=80'" alt="JCK Crypto Exchange">
+            <div class="project-card-overlay"></div>
+          </div>
+          <div class="project-info">
+            <div>
+              <div class="project-cat">Branding</div>
+              <h3 class="project-title">JCK Crypto Exchange</h3>
+              <p class="project-desc">Complete brand identity system, dynamic candlestick motif mark, and reusable social launch templates.</p>
+            </div>
+            <span class="project-link">View Case Study &rarr;</span>
+          </div>
+        </div>
+
+        <!-- PROJECT 2: Nifty Academy Platform -->
+        <div class="project-card featured-tall" data-category="ui/ux" onclick="openProjectModal('Nifty Academy Platform', 'UI/UX', '/assets/work-academy.jpg', 'Digital design language and course branding for an online learning platform, covering the marketing site, lesson interface and content templates.')">
+          <div class="project-thumb-wrap">
+            <img class="project-thumb" src="/assets/work-academy.jpg" onerror="this.src='https://images.unsplash.com/photo-1522542550221-31fd19575a2d?auto=format&fit=crop&w=900&q=80'" alt="Nifty Academy Platform">
+            <div class="project-card-overlay"></div>
+          </div>
+          <div class="project-info">
+            <div>
+              <div class="project-cat">UI/UX</div>
+              <h3 class="project-title">Nifty Academy Platform</h3>
+              <p class="project-desc">Intuitive dark-first student portal, modular course typography, and multi-disciplinary interface design.</p>
+            </div>
+            <span class="project-link">View Case Study &rarr;</span>
+          </div>
+        </div>
+
+        <!-- PROJECT 3: Pulse Social Campaign -->
+        <div class="project-card" data-category="social media" onclick="openProjectModal('Pulse Social Campaign', 'Social Media', '/assets/work-social.jpg', 'High-engagement multi-platform social media campaign assets, launch carousels, and Instagram stories.')">
+          <div class="project-thumb-wrap">
+            <img class="project-thumb" src="/assets/work-social.jpg" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=900&q=80'" alt="Pulse Social Campaign">
+            <div class="project-card-overlay"></div>
+          </div>
+          <div class="project-info">
+            <div>
+              <div class="project-cat">Social Media</div>
+              <h3 class="project-title">Pulse Social Campaign</h3>
+              <p class="project-desc">Vibrant feed carousels, animated motion hooks, and promotional brand templates.</p>
+            </div>
+            <span class="project-link">View Case Study &rarr;</span>
+          </div>
+        </div>
+
+        <!-- PROJECT 4: HyperDrive Thumbnail Series -->
+        <div class="project-card" data-category="thumbnails" onclick="openProjectModal('HyperDrive Thumbnail Series', 'Thumbnails', '/assets/work-thumbnails.jpg', 'Engineered YouTube thumbnails designed for maximum click-through-rates with custom 3D typography and contrast.')">
+          <div class="project-thumb-wrap">
+            <img class="project-thumb" src="/assets/work-thumbnails.jpg" onerror="this.src='https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?auto=format&fit=crop&w=900&q=80'" alt="HyperDrive Thumbnail Series">
+            <div class="project-card-overlay"></div>
+          </div>
+          <div class="project-info">
+            <div>
+              <div class="project-cat">Thumbnails</div>
+              <h3 class="project-title">HyperDrive Thumbnails</h3>
+              <p class="project-desc">High-CTR video packaging with striking contrast, dynamic lighting, and expressive typography.</p>
+            </div>
+            <span class="project-link">View Case Study &rarr;</span>
+          </div>
+        </div>
+
+        <!-- PROJECT 5: Kinetic Streetwear Tee -->
+        <div class="project-card" data-category="t shirt" onclick="openProjectModal('Kinetic Streetwear Tee', 'T Shirt', 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=900&q=80', 'Custom screen-print vector illustrations and typography created for an urban streetwear apparel collection.')">
+          <div class="project-thumb-wrap">
+            <img class="project-thumb" src="https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=900&q=80" alt="Kinetic Streetwear Tee">
+            <div class="project-card-overlay"></div>
+          </div>
+          <div class="project-info">
+            <div>
+              <div class="project-cat">T Shirt</div>
+              <h3 class="project-title">Kinetic Streetwear Tee</h3>
+              <p class="project-desc">Screen-print apparel artwork, distressed typography, and merchandise vector files.</p>
+            </div>
+            <span class="project-link">View Case Study &rarr;</span>
+          </div>
+        </div>
+
+        <!-- PROJECT 6: Atelier Visual Identity -->
+        <div class="project-card" data-category="branding" onclick="openProjectModal('Atelier Visual Identity', 'Branding', '/assets/work-identity.jpg', 'Sophisticated identity system with bespoke logo lockup, stationery package, and luxury packaging layout.')">
+          <div class="project-thumb-wrap">
+            <img class="project-thumb" src="/assets/work-identity.jpg" onerror="this.src='https://images.unsplash.com/photo-1600132806370-bf17e65e942f?auto=format&fit=crop&w=900&q=80'" alt="Atelier Visual Identity">
+            <div class="project-card-overlay"></div>
+          </div>
+          <div class="project-info">
+            <div>
+              <div class="project-cat">Branding</div>
+              <h3 class="project-title">Atelier Visual Identity</h3>
+              <p class="project-desc">Minimalist mark, foil-stamped business stationery, and clean visual guidelines.</p>
+            </div>
+            <span class="project-link">View Case Study &rarr;</span>
+          </div>
+        </div>
+
+        <!-- PROJECT 7: Monochrome Annual Report -->
+        <div class="project-card" data-category="print design" onclick="openProjectModal('Monochrome Annual Report', 'Print Design', 'https://images.unsplash.com/photo-1586075010923-2dd4570fb338?auto=format&fit=crop&w=900&q=80', 'High-end CMYK corporate brochure layout, editorial typography hierarchy, and financial charts.')">
+          <div class="project-thumb-wrap">
+            <img class="project-thumb" src="https://images.unsplash.com/photo-1586075010923-2dd4570fb338?auto=format&fit=crop&w=900&q=80" alt="Monochrome Annual Report">
+            <div class="project-card-overlay"></div>
+          </div>
+          <div class="project-info">
+            <div>
+              <div class="project-cat">Print Design</div>
+              <h3 class="project-title">Monochrome Annual Report</h3>
+              <p class="project-desc">Multi-page corporate print publication, folded brochures, and display collateral.</p>
+            </div>
+            <span class="project-link">View Case Study &rarr;</span>
+          </div>
+        </div>
+
+        <!-- PROJECT 8: Apex Gaming Jersey -->
+        <div class="project-card" data-category="t shirt" onclick="openProjectModal('Apex Gaming Jersey', 'T Shirt', 'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=900&q=80', 'Custom esports tournament jersey vector design with sublimation print layouts and sponsor lockups.')">
+          <div class="project-thumb-wrap">
+            <img class="project-thumb" src="https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=900&q=80" alt="Apex Gaming Jersey">
+            <div class="project-card-overlay"></div>
+          </div>
+          <div class="project-info">
+            <div>
+              <div class="project-cat">T Shirt</div>
+              <h3 class="project-title">Apex Gaming Jersey</h3>
+              <p class="project-desc">Sublimation esports jersey graphics, sponsor alignment, and apparel mockups.</p>
+            </div>
+            <span class="project-link">View Case Study &rarr;</span>
+          </div>
+        </div>
+
+        <!-- PROJECT 9: Genesis 3D Packaging -->
+        <div class="project-card" data-category="other" onclick="openProjectModal('Genesis 3D Packaging', 'Other', 'https://images.unsplash.com/photo-1531973576160-7125cd663d86?auto=format&fit=crop&w=900&q=80', 'Custom dieline design, 3D box renders, and unboxing merchandise package for exclusive retail product.')">
+          <div class="project-thumb-wrap">
+            <img class="project-thumb" src="https://images.unsplash.com/photo-1531973576160-7125cd663d86?auto=format&fit=crop&w=900&q=80" alt="Genesis 3D Packaging">
+            <div class="project-card-overlay"></div>
+          </div>
+          <div class="project-info">
+            <div>
+              <div class="project-cat">Other</div>
+              <h3 class="project-title">Genesis 3D Packaging</h3>
+              <p class="project-desc">Product box dieline layouts, 3D photorealistic mockups, and retail unboxing collateral.</p>
+            </div>
+            <span class="project-link">View Case Study &rarr;</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== SERVICES ==================== -->
+  <section class="services-section" id="services">
+    <div class="container">
+      <div class="section-label">
+        <span class="section-label-bar"></span>
+        <span>Services</span>
+      </div>
+
+      <h2 class="section-title">What I bring to <span class="text-gradient">the table.</span></h2>
+      <p class="section-subtitle">
+        Tailored graphic design services crafted with strategic thinking, bold aesthetics, and relentless attention to detail.
+      </p>
+
+      <div class="services-grid">
+        <div class="service-card">
+          <div class="service-num">01</div>
+          <h3>Brand Identity &amp; Systems</h3>
+          <p>Logo marks, typography standards, color systems, and comprehensive style guides that give your brand a timeless presence.</p>
+        </div>
+
+        <div class="service-card">
+          <div class="service-num">02</div>
+          <h3>Social Media &amp; Content Design</h3>
+          <p>High-converting carousel packs, promotional ad banners, story templates, and consistent feed design across all platforms.</p>
+        </div>
+
+        <div class="service-card">
+          <div class="service-num">03</div>
+          <h3>YouTube &amp; Video Packaging</h3>
+          <p>High-CTR custom YouTube thumbnails, channel banners, end cards, and title graphics that drive real viewership.</p>
+        </div>
+
+        <div class="service-card">
+          <div class="service-num">04</div>
+          <h3>Apparel &amp; Merchandise Design</h3>
+          <p>Screen-print artwork, streetwear vector graphics, typography tees, and merchandise ready for apparel manufacturing.</p>
+        </div>
+
+        <div class="service-card">
+          <div class="service-num">05</div>
+          <h3>UI/UX &amp; Digital Experience</h3>
+          <p>Responsive website interfaces, intuitive digital product dashboards, and modern Figma component design systems.</p>
+        </div>
+
+        <div class="service-card">
+          <div class="service-num">06</div>
+          <h3>Print &amp; Publication Design</h3>
+          <p>Annual reports, brochures, flyers, business cards, billboard graphics, and event posters in production-ready CMYK formats.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== PROCESS ==================== -->
+  <section class="process-section" id="process">
+    <div class="container">
+      <div class="section-label">
+        <span class="section-label-bar"></span>
+        <span>Process</span>
+      </div>
+
+      <h2 class="section-title">How we bring ideas <span class="text-gradient">to life.</span></h2>
+      <p class="section-subtitle">A tested four-step methodology ensuring clarity, creative excellence, and on-time delivery.</p>
+
+      <div class="process-grid">
+        <div class="process-card">
+          <div class="process-num">01</div>
+          <h4>Discovery &amp; Strategy</h4>
+          <p>Aligning on goals, target audience, competitive landscape, and creative direction through focused briefing.</p>
+        </div>
+
+        <div class="process-card">
+          <div class="process-num">02</div>
+          <h4>Direction &amp; Concepts</h4>
+          <p>Developing diverse visual sketches, moodboards, and exploratory directions for your evaluation.</p>
+        </div>
+
+        <div class="process-card">
+          <div class="process-num">03</div>
+          <h4>Craft &amp; Refinement</h4>
+          <p>Polishing chosen concepts with precise typography, optical kerning, color calibration, and feedback cycles.</p>
+        </div>
+
+        <div class="process-card">
+          <div class="process-num">04</div>
+          <h4>Delivery &amp; Production</h4>
+          <p>Providing production-ready deliverables across all digital and print vector formats with full commercial usage rights.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== REVIEWS ==================== -->
+  <section class="reviews-section" id="reviews">
+    <div class="container">
+      <div class="section-label">
+        <span class="section-label-bar"></span>
+        <span>Reviews</span>
+      </div>
+
+      <h2 class="section-title">Words from people <span class="text-gradient">I've worked with.</span></h2>
+      <p class="section-subtitle">Real feedback from clients who trust Niftygraphy to elevate their visual presence.</p>
+
+      <div class="reviews-grid">
+        <div class="review-card">
+          <div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p class="review-text">
+            "Shen delivered the entire brand identity for JCK Exchange. The turnarounds were lightning fast and the visual polish exceeded all our expectations."
+          </p>
+          <div class="review-author">
+            <div class="author-avatar">J</div>
+            <div class="author-info">
+              <h5>Jason Miller</h5>
+              <span>Founder, JCK Crypto</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="review-card">
+          <div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p class="review-text">
+            "My YouTube CTR jumped from 4% to 11.5% after switching to Niftygraphy's thumbnails. He understands contrast and visual hierarchy on an elite level."
+          </p>
+          <div class="review-author">
+            <div class="author-avatar">M</div>
+            <div class="author-info">
+              <h5>Marcus Vance</h5>
+              <span>Content Creator (450K+ Subs)</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="review-card">
+          <div class="review-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p class="review-text">
+            "From brand stylebooks to daily social banners, Shen is our go-to creative partner. Professional, reliable, and exceptionally talented."
+          </p>
+          <div class="review-author">
+            <div class="author-avatar">A</div>
+            <div class="author-info">
+              <h5>Amara Silva</h5>
+              <span>Marketing Lead, Nexus Digital</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== CONTACT ==================== -->
+  <section class="contact-section" id="contact">
+    <div class="container">
+      <div class="contact-box">
+        
+        <div>
+          <div class="section-label">
+            <span class="section-label-bar"></span>
+            <span>Contact</span>
+          </div>
+
+          <h2 class="section-title">Let's make something <span class="text-gradient">memorable.</span></h2>
+          <p class="section-subtitle" style="margin-bottom: 30px;">
+            Have a project in mind or want to explore collaboration? Send a note and I'll get back to you within 24 hours.
+          </p>
+
+          <form class="contact-form" id="contactForm">
+            <div class="form-group">
+              <label for="formName">Your Name</label>
+              <input type="text" id="formName" class="form-input" placeholder="e.g. John Doe" required>
+            </div>
+
+            <div class="form-group">
+              <label for="formEmail">Email Address</label>
+              <input type="email" id="formEmail" class="form-input" placeholder="e.g. john@example.com" required>
+            </div>
+
+            <div class="form-group">
+              <label for="formService">Project Type</label>
+              <input type="text" id="formService" class="form-input" placeholder="e.g. Brand Identity, YouTube Thumbnails, UI/UX">
+            </div>
+
+            <div class="form-group">
+              <label for="formMessage">Project Details</label>
+              <textarea id="formMessage" class="form-textarea" rows="4" placeholder="Tell me about your timeline, scope, and objectives..." required></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="margin-top: 8px;">
+              Send Message &rarr;
+            </button>
+          </form>
+        </div>
+
+        <div class="contact-info-list">
+          <div class="contact-info-card">
+            <div class="contact-info-icon">&#9993;</div>
+            <div>
+              <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Email</div>
+              <a href="mailto:niftygraphy24@gmail.com" style="font-weight: 600; color: var(--text-main); font-size: 1rem;">niftygraphy24@gmail.com</a>
+            </div>
+          </div>
+
+          <div class="contact-info-card">
+            <div class="contact-info-icon">&#9742;</div>
+            <div>
+              <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Direct WhatsApp</div>
+              <a href="https://wa.me/94759700219" target="_blank" rel="noopener" style="font-weight: 600; color: #4ade80; font-size: 1rem;">+94 75 970 0219</a>
+            </div>
+          </div>
+
+          <div class="contact-info-card">
+            <div class="contact-info-icon">&#9873;</div>
+            <div>
+              <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Location</div>
+              <span style="font-weight: 600; color: var(--text-main); font-size: 1rem;">Colombo, Sri Lanka — working worldwide</span>
+            </div>
+          </div>
+
+          <div style="padding: 24px; border-radius: var(--radius-md); background: rgba(255, 137, 6, 0.08); border: 1px dashed rgba(255, 137, 6, 0.3);">
+            <h4 style="font-family: var(--font-display); font-size: 1.05rem; margin-bottom: 6px;">Fast Communication</h4>
+            <p style="color: var(--text-muted); font-size: 0.88rem;">Need immediate turnaround? Reach out directly on WhatsApp for expedited delivery.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== FOOTER ==================== -->
+  <footer class="footer">
+    <div class="container footer-container">
+      <div>
+        &copy; <span id="currentYear">2026</span> NIFTYGRAPHY. All rights reserved.
+      </div>
+      <div>
+        Designed &amp; Handcrafted by P.D. Yadeesha Shen Perera
+      </div>
+      <div>
+        <a href="#home" style="color: var(--accent); font-weight: 600;">Back to top &uarr;</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==================== DETAIL MODAL ==================== -->
+  <div class="modal-backdrop" id="projectModal" onclick="closeProjectModal(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <button type="button" class="modal-close" onclick="closeProjectModal()" aria-label="Close Modal">&times;</button>
+      <div class="modal-img-wrap">
+        <img id="modalImage" src="" alt="Project Case Study">
+      </div>
+      <div style="margin-bottom: 12px;">
+        <span class="section-label" id="modalCategory" style="margin-bottom: 0;">Branding</span>
+      </div>
+      <h2 class="section-title" id="modalTitle" style="font-size: 1.85rem; margin-bottom: 14px;">Project Title</h2>
+      <p class="section-subtitle" id="modalDescription" style="margin-bottom: 24px;">Project full description.</p>
+      
+      <div style="display: flex; gap: 14px;">
+        <a href="#contact" class="btn btn-primary" onclick="closeProjectModal()">Inquire About Similar Project</a>
+        <button type="button" class="btn btn-outline" onclick="closeProjectModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== FUNCTIONAL PLAIN JAVASCRIPT ==================== -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+      // 1. UPDATE COPYRIGHT YEAR
+      const yearEl = document.getElementById('currentYear');
+      if (yearEl) yearEl.textContent = new Date().getFullYear();
+
+      // 2. MOBILE MENU TOGGLE
+      const menuToggle = document.getElementById('menuToggle');
+      const mobileMenu = document.getElementById('mobileMenu');
+      const mobileLinks = document.querySelectorAll('.mobile-link');
+
+      if (menuToggle && mobileMenu) {
+        menuToggle.addEventListener('click', () => {
+          mobileMenu.classList.toggle('open');
+        });
+
+        mobileLinks.forEach(link => {
+          link.addEventListener('click', () => {
+            mobileMenu.classList.remove('open');
+          });
+        });
+      }
+
+      // =====================================================================
+      // 3. IMAGE SLIDER / CAROUSEL FUNCTIONALITY (ABOUT SECTION)
+      //    Clicking < and > switches between all 4 profile/portfolio images,
+      //    and dynamically updates the image counter (1/4, 2/4, etc.).
+      // =====================================================================
+      const slides = document.querySelectorAll('.carousel-slide');
+      const prevBtn = document.getElementById('prevSlideBtn');
+      const nextBtn = document.getElementById('nextSlideBtn');
+      const currentNumEl = document.getElementById('carouselCurrentNum');
+      const totalNumEl = document.getElementById('carouselTotalNum');
+      const captionEl = document.getElementById('carouselCaption');
+      const subtitleEl = document.getElementById('carouselSubtitle');
+      
+      let currentSlide = 0;
+      const totalSlides = slides.length;
+
+      if (totalNumEl) {
+        totalNumEl.textContent = totalSlides;
+      }
+
+      function showSlide(index) {
+        // Wrap-around bounds
+        if (index < 0) {
+          currentSlide = totalSlides - 1;
+        } else if (index >= totalSlides) {
+          currentSlide = 0;
+        } else {
+          currentSlide = index;
+        }
+
+        // Toggle active class on all slide elements
+        slides.forEach((slide, i) => {
+          if (i === currentSlide) {
+            slide.classList.add('active');
+            // Update caption and subtitle
+            const cap = slide.getAttribute('data-caption');
+            const sub = slide.getAttribute('data-sub');
+            if (captionEl && cap) captionEl.textContent = cap;
+            if (subtitleEl && sub) subtitleEl.textContent = sub;
+          } else {
+            slide.classList.remove('active');
+          }
+        });
+
+        // Update image counter display (e.g. 1/4, 2/4, etc.)
+        if (currentNumEl) {
+          currentNumEl.textContent = currentSlide + 1;
+        }
+      }
+
+      if (prevBtn && nextBtn && totalSlides > 0) {
+        // Left arrow button (<)
+        prevBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          showSlide(currentSlide - 1);
+        });
+
+        // Right arrow button (>)
+        nextBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          showSlide(currentSlide + 1);
+        });
+
+        // Keyboard arrow navigation
+        document.addEventListener('keydown', (e) => {
+          if (e.key === 'ArrowLeft') {
+            showSlide(currentSlide - 1);
+          } else if (e.key === 'ArrowRight') {
+            showSlide(currentSlide + 1);
+          }
+        });
+
+        // Auto-play timer with pause on hover
+        let slideTimer = setInterval(() => {
+          showSlide(currentSlide + 1);
+        }, 4000);
+
+        const carouselCard = document.getElementById('aboutCarousel');
+        if (carouselCard) {
+          carouselCard.addEventListener('mouseenter', () => clearInterval(slideTimer));
+          carouselCard.addEventListener('mouseleave', () => {
+            clearInterval(slideTimer);
+            slideTimer = setInterval(() => showSlide(currentSlide + 1), 4000);
+          });
+        }
+      }
+
+      // =====================================================================
+      // 4. CATEGORY FILTER BUTTONS FUNCTIONALITY (WORKS / PROJECTS SECTION)
+      //    Clicking category buttons (All, Branding, Social Media, Thumbnails,
+      //    T Shirt, UI/UX, Print Design, Other) filters and shows/hides
+      //    the corresponding project cards dynamically.
+      // =====================================================================
+      const filterBtns = document.querySelectorAll('.filter-btn');
+      const projectCards = document.querySelectorAll('.project-card');
+
+      filterBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault();
+
+          // 1. Update active button visual state
+          filterBtns.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+
+          // 2. Normalize selected category string
+          const rawSelected = btn.getAttribute('data-category') || 'all';
+          const selected = rawSelected.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+          // 3. Show or hide matching project cards
+          projectCards.forEach(card => {
+            const rawCardCat = card.getAttribute('data-category') || '';
+            const cardCat = rawCardCat.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+            if (selected === 'all' || cardCat === selected) {
+              card.style.display = 'flex';
+              // Smooth fade-in transition
+              card.style.opacity = '0';
+              card.style.transform = 'translateY(12px)';
+              setTimeout(() => {
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+              }, 20);
+            } else {
+              card.style.display = 'none';
+            }
+          });
+        });
+      });
+
+      // 5. CONTACT FORM TO WHATSAPP
+      const contactForm = document.getElementById('contactForm');
+      if (contactForm) {
+        contactForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const name = document.getElementById('formName')?.value || '';
+          const email = document.getElementById('formEmail')?.value || '';
+          const service = document.getElementById('formService')?.value || '';
+          const message = document.getElementById('formMessage')?.value || '';
+
+          const text = encodeURIComponent(
+            `Hello Niftygraphy! My name is ${name} (${email}). Project type: ${service}. Message: ${message}`
+          );
+          window.open(`https://wa.me/94759700219?text=${text}`, '_blank');
+          contactForm.reset();
+        });
+      }
+
+    });
+
+    // 6. CASE STUDY DETAIL MODAL HANDLERS
+    function openProjectModal(title, category, imgSrc, desc) {
+      const modal = document.getElementById('projectModal');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalCat = document.getElementById('modalCategory');
+      const modalImg = document.getElementById('modalImage');
+      const modalDesc = document.getElementById('modalDescription');
+
+      if (modalTitle) modalTitle.textContent = title;
+      if (modalCat) modalCat.textContent = category;
+      if (modalImg) modalImg.src = imgSrc;
+      if (modalDesc) modalDesc.textContent = desc;
+
+      if (modal) modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeProjectModal(event) {
+      if (event && event.target && event.target.id !== 'projectModal' && !event.target.classList.contains('modal-close') && !event.target.classList.contains('btn')) {
+        return;
+      }
+      const modal = document.getElementById('projectModal');
+      if (modal) modal.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeProjectModal();
+    });
+  </script>
+</body>
+</html>

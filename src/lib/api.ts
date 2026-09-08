@@ -151,14 +151,11 @@ export async function parseResponseJson<T = any>(res: Response, endpoint = 'API'
 // ----------------------------------------------------
 // AUTH API
 // ----------------------------------------------------
-export async function apiLogin(password: string, usernameOrEmail?: string) {
+export async function apiLogin(password: string) {
   const res = await fetch(`${API_BASE}/auth/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      email: usernameOrEmail,
-      username: usernameOrEmail,
-      identifier: usernameOrEmail,
       password,
     }),
   });
